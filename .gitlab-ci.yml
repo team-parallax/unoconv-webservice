@@ -1,7 +1,5 @@
-include:
-  - project: degenia/my-degenia/architecture
-    ref: master
-    file: '/.gitlab-ci.services.yml'
+default:
+  image: node:12.2.0-alpine
 
 stages:
   - prepare
@@ -17,7 +15,9 @@ stages:
 test_unit:
   stage: test
   script:
-    - yarn run test
+    - npm -v
+    - node -v
+    - npm run test
 
 test_quality:
   image:
