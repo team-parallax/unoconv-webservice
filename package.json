@@ -3,8 +3,19 @@
 	"version": "0.1.0",
 	"description": "REST api to convert files to different formats using unoconv",
 	"license": "MIT",
-	"author": "Sven Patrick Meier <sven.meier@team-parallax.com>",
+	"author": "Sven Patrick Meier <sven.patrick.meier@team-parallax.com>",
 	"main": "src/app.ts",
+	"husky": {
+		"hooks": {
+			"pre-commit": "yarn run lint-staged",
+			"pre-push": "yarn run test"
+		}
+	},
+	"lint-staged": {
+		"src/**/*.{js,ts}": [
+			"eslint --fix"
+		]
+	},
 	"scripts": {
 		"test": "jest --config ./jest.config.js",
 		"preinstall": "npx use-yarn",

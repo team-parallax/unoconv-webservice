@@ -3,6 +3,7 @@ import {
 } from "tsoa"
 import { ConversionService } from "../../service/conversion"
 import { IConversionRequestBody } from "../../model"
+const internalServerError: number = 500
 @Route("/conversion")
 @Tags("Conversion")
 export class ConversionController extends Controller {
@@ -10,7 +11,7 @@ export class ConversionController extends Controller {
 	public async convertFile(
 		@Body() conversionRequestBody: IConversionRequestBody
 	): Promise<any> {
-		this.setStatus(500)
+		this.setStatus(internalServerError)
 		return await ConversionService.convertFile(conversionRequestBody)
 	}
 	@Get("{fileId}")

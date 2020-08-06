@@ -1,0 +1,32 @@
+stages:
+  - prepare
+  - test
+  - build
+  - post
+
+# test_lint:
+#   stage: test
+#   script:
+#     - yarn run lint
+
+test_unit:
+  stage: test
+  script:
+    - yarn run test
+
+test_quality:
+  image:
+    name: eu.gcr.io/parallax-gitlab/sonarqube:latest
+    entrypoint: [""]
+  stage: post
+  variables:
+    SONAR_TOKEN: ${SONAR_TOKEN}
+    SONAR_HOST_URL: "https://sonar.cloud.team-parallax.com/"
+    GIT_DEPTH: 0
+  script:
+    - npm install parallax-common-config@`node -p -e "require('./package.json').devDependencies['parallax-common-config']"`
+    - sonar-scanner -Dsonar.projectKey=belwue-${CI_PROJECT_NAME} -Dsonar.qualitygate.wait=true
+  allow_failure: true
+  only:
+    - tags
+    - master
