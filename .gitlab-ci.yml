@@ -1,3 +1,8 @@
+include:
+  - project: degenia/my-degenia/architecture
+    ref: master
+    file: '/.gitlab-ci.services.yml'
+
 stages:
   - prepare
   - test
