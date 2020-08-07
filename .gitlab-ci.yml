@@ -26,6 +26,7 @@ install_depedencies:
 test_unit:
   stage: test
   script:
+    - npm install
     - npm run test
 
 test_quality:
