@@ -1,4 +1,5 @@
 import { RegisterRoutes } from "./routes/routes"
+import { internalServerErrorStatus } from "./constants"
 import bodyParser from "body-parser"
 import cors from "cors"
 import express, {
@@ -34,7 +35,7 @@ export class Server {
 			res: Response,
 			next: NextFunction
 		) => {
-			const status = err.status || 500
+			const status = err.status || internalServerErrorStatus
 			console.error(err)
 			const body: any = {
 				fields: err.fields || undefined,
