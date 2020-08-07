@@ -1,6 +1,13 @@
 default:
   image: node:12.2.0-alpine
 
+  cache:
+    key:
+      files:
+        - package.json
+    paths:
+      - node_modules/
+
 stages:
   - prepare
   - test
@@ -15,8 +22,6 @@ stages:
 test_unit:
   stage: test
   script:
-    - npm -v
-    - node -v
     - npm install
     - npm run test
 
