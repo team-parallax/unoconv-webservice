@@ -14,6 +14,10 @@ stages:
   - build
   - post
 
+install_depedencies:
+  stage: prepare
+  script: npm install
+
 # test_lint:
 #   stage: test
 #   script:
@@ -22,7 +26,6 @@ stages:
 test_unit:
   stage: test
   script:
-    - npm install
     - npm run test
 
 test_quality:
