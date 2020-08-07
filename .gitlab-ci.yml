@@ -2,9 +2,7 @@ default:
   image: node:12.2.0-alpine
 
   cache:
-    key:
-      files:
-        - package.json
+    key: "$CI_COMMIT_REF_SLUG"
     paths:
       - node_modules/
 
@@ -18,10 +16,11 @@ install_depedencies:
   stage: prepare
   script: npm install
 
-# test_lint:
-#   stage: test
-#   script:
-#     - yarn run lint
+test_lint:
+  stage: test
+  script:
+    - npm install
+    - npm run lint
 
 test_unit:
   stage: test
