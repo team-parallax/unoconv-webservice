@@ -3,7 +3,7 @@ import {
 } from "tsoa"
 import { ConversionService } from "../../service/conversion"
 import { IConversionRequestBody } from "../../model"
-import { internalServerErrorStatus } from "~/constants"
+import { internalServerErrorStatus } from "../../constants"
 @Route("/conversion")
 @Tags("Conversion")
 export class ConversionController extends Controller {

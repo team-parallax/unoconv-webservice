@@ -42,8 +42,7 @@
 			"name": "MIT"
 		},
 		"contact": {
-			"name": "Sven Patrick Meier ",
-			"email": "sven.meier@team-parallax.com"
+			"name": "Sven Patrick Meier"
 		}
 	},
 	"openapi": "3.0.0",

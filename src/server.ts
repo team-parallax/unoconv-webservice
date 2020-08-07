@@ -52,6 +52,7 @@ export class Server {
 		this.app.use(cors())
 		// Set max limit
 		this.app.use(bodyParser.urlencoded({
+			// eslint-disable-next-line @typescript-eslint/naming-convention
 			extended: true,
 			limit: "50mb"
 		}))
