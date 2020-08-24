@@ -1,13 +1,13 @@
-import { RegisterRoutes } from "./routes/routes"
-import { internalServerErrorStatus } from "./constants"
+import { EHttpResponseCodes } from "../../constants"
+import { RegisterRoutes } from "../../routes/routes"
 import bodyParser from "body-parser"
 import cors from "cors"
 import express, {
 	Application, Express, NextFunction, Request, Response
 } from "express"
-import swaggerDocument from "../swagger.json"
+import swaggerDocument from "../../../swagger.json"
 import swaggerUi from "swagger-ui-express"
-export class Server {
+export class Api {
 	private readonly _port: number
 	private readonly app: Application
 	private readonly defaultPort: number = 3000
@@ -23,21 +23,26 @@ export class Server {
 		})
 	}
 	private readonly addApi = (): void => {
+		const {
+			internalServerError
+		} = EHttpResponseCodes
 		this.app.get("/", (req, res, err) => {
 			res.send("Request received")
 		})
 		RegisterRoutes(this.app as Express)
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		this.app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument as any))
 		this.app.get("/swagger.json", (req: Request, res: Response) => res.json(swaggerDocument))
 		this.app.use((
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			err: any,
 			req: Request,
 			res: Response,
 			next: NextFunction
 		) => {
-			const status = err.status || internalServerErrorStatus
+			const status = err.status || internalServerError
 			console.error(err)
-			const body: any = {
+			const body = {
 				fields: err.fields || undefined,
 				message: err.message || "An error occurred during the request.",
 				name: err.name,
