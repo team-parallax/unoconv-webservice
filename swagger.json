@@ -23,7 +23,6 @@
 					}
 				},
 				"required": [
-					"file",
 					"filename",
 					"originalFormat",
 					"targetFormat"

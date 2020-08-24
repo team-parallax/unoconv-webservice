@@ -12,7 +12,7 @@ const models: TsoaRoute.Models = {
 	"IConversionRequestBody": {
 		"dataType": "refObject",
 		"properties": {
-			"file": { "dataType": "buffer", "required": true },
+			"file": { "dataType": "buffer" },
 			"filename": { "dataType": "string", "required": true },
 			"originalFormat": { "dataType": "string", "required": true },
 			"targetFormat": { "dataType": "string", "required": true },
