@@ -1,8 +1,7 @@
 {
 	"extends": [
 		"./node_modules/parallax-common-config/.eslintrc",
-		"./node_modules/parallax-common-config/.eslintrc.typescript",
-		"./node_modules/parallax-common-config/.eslintrc.jest"
+		"./node_modules/parallax-common-config/.eslintrc.typescript"
 	],
 	"parserOptions": {
 		"project": "./tsconfig.json"

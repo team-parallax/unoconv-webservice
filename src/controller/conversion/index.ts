@@ -1,21 +1,21 @@
 import {
 	Body, Controller, Get, Path, Post, Route, Tags
 } from "tsoa"
-import { ConverterService } from "../../service/conversion"
-import { EHttpResponseCodes } from "../../constants"
-import { IConversionRequestBody, IConversionStatusResponse } from "../../service/conversion/interface"
+import { ConversionService } from "../../service/conversion"
+import { IConversionRequestBody } from "../../model"
+import { internalServerErrorStatus } from "../../constants"
 @Route("/conversion")
 @Tags("Conversion")
 export class ConversionController extends Controller {
 	@Post("/")
-	public convertFile(
+	public async convertFile(
 		@Body() conversionRequestBody: IConversionRequestBody
-	): unknown {
-		this.setStatus(EHttpResponseCodes.internalServerError)
-		return new ConverterService().processConversionRequest(conversionRequestBody)
+	): Promise<any> {
+		this.setStatus(internalServerErrorStatus)
+		return await ConversionService.convertFile(conversionRequestBody)
 	}
 	@Get("{fileId}")
-	public getConvertedFile(@Path() fileId: string): IConversionStatusResponse {
-		return new ConverterService().getConvertedFile(fileId)
+	public async getConvertedFile(@Path() fileId: string): Promise<any> {
+		return await ConversionService.getConvertedFile(fileId)
 	}
 }

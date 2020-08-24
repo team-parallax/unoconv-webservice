@@ -20,7 +20,6 @@ module.exports = {
 		"~/": "<rootDir>/src/"
 	},
 	testRegex: "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$",
-	testTimeout: 60000,
 	transform: {
 		".ts$": "ts-jest"
 	},

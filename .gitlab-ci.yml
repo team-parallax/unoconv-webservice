@@ -1,10 +1,10 @@
 default:
-  image: teamparallax/unoconv-alpine:v1.1.4
+  image: node:12.2.0-alpine
 
   cache:
     key: "$CI_COMMIT_REF_SLUG"
     paths:
-      - .npm/
+      - node_modules/
 
 stages:
   - prepare
@@ -12,23 +12,21 @@ stages:
   - build
   - post
 
-before_script:
-  - yarn install --cache .npm --prefer-offline
-
-install_dependencies:
+install_depedencies:
   stage: prepare
-  script:
-    - yarn install
+  script: npm install
 
 test_lint:
   stage: test
   script:
-    - yarn run lint
+    - npm install
+    - npm run lint
 
 test_unit:
   stage: test
   script:
-    - yarn run test
+    - npm install
+    - npm run test
 
 test_quality:
   image:
@@ -40,7 +38,7 @@ test_quality:
     SONAR_HOST_URL: "https://sonar.cloud.team-parallax.com/"
     GIT_DEPTH: 0
   script:
-    - yarn install parallax-common-config@`node -p -e "require('./package.json').devDependencies['parallax-common-config']"`
+    - npm install parallax-common-config@`node -p -e "require('./package.json').devDependencies['parallax-common-config']"`
     - sonar-scanner -Dsonar.projectKey=belwue-${CI_PROJECT_NAME} -Dsonar.qualitygate.wait=true
   allow_failure: true
   only:

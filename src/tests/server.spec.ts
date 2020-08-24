@@ -1,16 +1,16 @@
-import { Api } from "../service/api"
+import { Server } from "../server"
 describe("Server should pass all tests", () => {
 	describe("All properties are assigned and have correct values: ", () => {
 		it("should have initialized properties: ", () => {
 			/* Arrange */
 			const defaultPort: number = 3000
+			const server = new Server()
 			/* Act */
-			const server = new Api()
 			const {
 				port
 			} = server
 			/* Assert */
-			expect(server).toBeInstanceOf(Api)
+			expect(server).toBeInstanceOf(Server)
 			expect(port).not.toBe(undefined)
 			expect(port).toBe(defaultPort)
 		})
@@ -20,7 +20,7 @@ describe("Server should pass all tests", () => {
 			/* Arrange */
 			const port: number = 1337
 			/* Act */
-			const server = new Api(port)
+			const server = new Server(port)
 			/* Assert */
 			expect(server.port).toBe(port)
 		})
@@ -28,7 +28,7 @@ describe("Server should pass all tests", () => {
 			/* Arrange */
 			const port: number = 2222
 			/* Act */
-			const server = new Api(port)
+			const server = new Server(port)
 			/* Assert */
 			expect(server.port).toBe(port)
 		})
@@ -36,7 +36,7 @@ describe("Server should pass all tests", () => {
 			/* Arrange */
 			const defaultPort: number = 3000
 			/* Act */
-			const server = new Api()
+			const server = new Server()
 			/* Assert */
 			expect(server.port).toBe(defaultPort)
 		})

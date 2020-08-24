@@ -17,20 +17,19 @@
 		]
 	},
 	"scripts": {
-		"lint": "eslint src --ext .ts --fix",
+		"test": "jest --config ./jest.config.js",
 		"preinstall": "npx use-yarn",
-		"test": "jest --config ./jest.config.js --runInBand",
-		"start": "ts-node src/app.ts",
-		"start:dev": "yarn tsoa:create:local && yarn start",
+		"lint": "yarn eslint src --ext .ts --fix",
+		"tsoa:create": "tsoa spec && tsoa routes",
 		"tsoa:create:local": "yarn tsoa:create && sed -i 's/https/http/g' swagger.json",
-		"tsoa:create": "tsoa spec && tsoa routes"
+		"start": "ts-node src/app.ts",
+		"start:dev": "yarn tsoa:create:local && yarn start"
 	},
 	"dependencies": {
 		"body-parser": "^1.19.0",
 		"cors": "^2.8.5",
 		"express": "^4.17.1",
-		"tsoa": "^3.2.1",
-		"uuid": "^8.3.0"
+		"tsoa": "^3.2.1"
 	},
 	"devDependencies": {
 		"@types/body-parser": "^1.19.0",
@@ -39,12 +38,10 @@
 		"@types/jest": "^26.0.8",
 		"@types/node": "^14.0.27",
 		"@types/swagger-ui-express": "^4.1.2",
-		"@types/uuid": "^8.3.0",
 		"jest": "^26.2.2",
-		"parallax-common-config": "^0.10.16",
+		"parallax-common-config": "^0.10.14",
 		"source-map-support": "^0.5.16",
 		"supertest": "^4.0.2",
-		"swagger-ui-express": "^4.1.4",
-		"unoconv2": "^1.0.0"
+		"swagger-ui-express": "^4.1.4"
 	}
 }
