@@ -17,19 +17,25 @@
 		]
 	},
 	"scripts": {
-		"test": "jest --config ./jest.config.js",
+		"build:docker": "docker build -t teamparallax/unoconv-webservice -f ./Dockerfile .",
+		"lint": "eslint src --ext .ts --fix",
 		"preinstall": "npx use-yarn",
-		"lint": "yarn eslint src --ext .ts --fix",
-		"tsoa:create": "tsoa spec && tsoa routes",
-		"tsoa:create:local": "yarn tsoa:create && sed -i 's/https/http/g' swagger.json",
+		"pre-test": "./prepare-tests.sh",
 		"start": "ts-node src/app.ts",
-		"start:dev": "yarn tsoa:create:local && yarn start"
+		"start:dev": "yarn tsoa:create:local && yarn start",
+		"start:docker": "docker run --name unoconv --add-host=docker:0.0.0.0 -p 3000:3000 -a stdout teamparallax/unoconv-webservice",
+		"test": "yarn pre-test && jest --config ./jest.config.js --runInBand",
+		"test:single": "yarn pre-test && jest --config ./jest.config.js  ",
+		"tsoa:create:local": "yarn tsoa:create && sed -i 's/https/http/g' swagger.json",
+		"tsoa:create": "tsoa spec && tsoa routes"
 	},
 	"dependencies": {
 		"body-parser": "^1.19.0",
 		"cors": "^2.8.5",
 		"express": "^4.17.1",
-		"tsoa": "^3.2.1"
+		"tsoa": "^3.2.1",
+		"typescript-ioc": "^3.2.2",
+		"uuid": "^8.3.0"
 	},
 	"devDependencies": {
 		"@types/body-parser": "^1.19.0",
@@ -38,10 +44,12 @@
 		"@types/jest": "^26.0.8",
 		"@types/node": "^14.0.27",
 		"@types/swagger-ui-express": "^4.1.2",
+		"@types/uuid": "^8.3.0",
 		"jest": "^26.2.2",
-		"parallax-common-config": "^0.10.14",
+		"parallax-common-config": "^0.10.16",
 		"source-map-support": "^0.5.16",
 		"supertest": "^4.0.2",
-		"swagger-ui-express": "^4.1.4"
+		"swagger-ui-express": "^4.1.4",
+		"unoconv2": "^1.0.0"
 	}
 }

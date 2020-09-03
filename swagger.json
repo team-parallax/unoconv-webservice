@@ -6,6 +6,18 @@
 		"requestBodies": {},
 		"responses": {},
 		"schemas": {
+			"IConversionProcessingResponse": {
+				"properties": {
+					"conversionId": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"conversionId"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"IConversionRequestBody": {
 				"properties": {
 					"file": {
@@ -27,6 +39,41 @@
 					"filename",
 					"originalFormat",
 					"targetFormat"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"IConversionResult": {
+				"properties": {
+					"conversionId": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					},
+					"path": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"conversionId",
+					"name",
+					"path"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"IConversionStatusResponse": {
+				"properties": {
+					"message": {
+						"type": "string"
+					},
+					"result": {
+						"$ref": "#/components/schemas/IConversionResult"
+					}
+				},
+				"required": [
+					"message"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -55,7 +102,9 @@
 						"description": "Ok",
 						"content": {
 							"application/json": {
-								"schema": {}
+								"schema": {
+									"$ref": "#/components/schemas/IConversionProcessingResponse"
+								}
 							}
 						}
 					}
@@ -85,7 +134,9 @@
 						"description": "Ok",
 						"content": {
 							"application/json": {
-								"schema": {}
+								"schema": {
+									"$ref": "#/components/schemas/IConversionStatusResponse"
+								}
 							}
 						}
 					}
