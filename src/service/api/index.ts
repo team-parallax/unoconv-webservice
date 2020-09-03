@@ -1,43 +1,48 @@
-import { RegisterRoutes } from "./routes/routes"
-import { internalServerErrorStatus } from "./constants"
+import { EHttpResponseCodes } from "../../constants"
+import { Logger } from "../logger"
+import { RegisterRoutes } from "../../routes/routes"
 import bodyParser from "body-parser"
 import cors from "cors"
 import express, {
 	Application, Express, NextFunction, Request, Response
 } from "express"
-import swaggerDocument from "../swagger.json"
+import swaggerDocument from "../../../swagger.json"
 import swaggerUi from "swagger-ui-express"
-export class Server {
+export class Api {
 	private readonly _port: number
 	private readonly app: Application
 	private readonly defaultPort: number = 3000
+	private readonly logger: Logger
 	constructor(port?: number) {
 		this.app = express()
 		this._port = port ?? this.defaultPort
+		this.logger = new Logger()
 		this.configureServer()
 		this.addApi()
 	}
 	listen = (): void => {
 		this.app.listen(this.port, () => {
-			console.log(`Listening on port ${this.port}`)
+			this.logger.log(`Listening on port ${this.port}`)
 		})
 	}
 	private readonly addApi = (): void => {
-		this.app.get("/", (req, res, err) => {
-			res.send("Request received")
-		})
+		const {
+			internalServerError
+		} = EHttpResponseCodes
 		RegisterRoutes(this.app as Express)
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		this.app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument as any))
 		this.app.get("/swagger.json", (req: Request, res: Response) => res.json(swaggerDocument))
 		this.app.use((
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			err: any,
 			req: Request,
 			res: Response,
 			next: NextFunction
 		) => {
-			const status = err.status || internalServerErrorStatus
+			const status = err.status || internalServerError
 			console.error(err)
-			const body: any = {
+			const body = {
 				fields: err.fields || undefined,
 				message: err.message || "An error occurred during the request.",
 				name: err.name,
@@ -63,7 +68,6 @@ export class Server {
 		this.app.use((req: Request, res: Response, next: NextFunction) => {
 			res.header("Access-Control-Allow-Origin", "*")
 			res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
-			console.log(`Request received: ${req.method} ${req.url}`)
 			next()
 		})
 	}

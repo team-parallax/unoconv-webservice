@@ -1,5 +1,7 @@
 # System file
 .DS_Store
+# generated output from conversion
+out
 # dependencies and build
 node_modules
 dist
