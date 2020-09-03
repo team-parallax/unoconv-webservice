@@ -12,10 +12,6 @@ One can also run the service using docker, therefore `Docker` needs to be instal
 If the above mentioned requirements are met one can run the service using the command:
 
 ```console
-# building the tsoa api
-yarn run tsoa:create:local
-
-# running the application
 yarn run start
 ```
 
@@ -32,8 +28,8 @@ yarn run start:docker
 Or one could pull the image from [Dockerhub](https://hub.docker.com/repository/docker/teamparallax/unoconv-webservice) and run it afterwards.
 
 ```console
-docker pull teamparallax/unoconv-webservice \ 
-	&& yarn run start:docker
+docker pull teamparallax/unoconv-webservice \
+ && yarn run start:docker
 ```
 
 ### Swagger API
