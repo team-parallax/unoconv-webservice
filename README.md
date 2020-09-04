@@ -2,12 +2,16 @@
 
 This project provides a webservice with a REST-API for file-conversions using unoconv.
 
-## Prerequesites
+## Prerequisites
 
-In order to run the service locally `unoconv` and its dependencies need to be installed.
+In order to run the service locally `unoconv` and its dependencies (libreoffice, python3) need to be installed.
 One can also run the service using docker, therefore `Docker` needs to be installed.
 
 ### Usage
+
+You can either build the service from its source files or use the built docker image. 
+
+#### Building from source
 
 If the above mentioned requirements are met one can run the service using the command:
 
@@ -15,7 +19,7 @@ If the above mentioned requirements are met one can run the service using the co
 yarn run start
 ```
 
-One can also build the webservice in a docker container by using the following command:
+One can also build the webservice in a `docker` container by using the following command:
 
 ```console
 # building the container image
@@ -25,11 +29,19 @@ yarn run build:docker
 yarn run start:docker
 ```
 
+#### Using the built image
+
 Or one could pull the image from [Dockerhub](https://hub.docker.com/repository/docker/teamparallax/unoconv-webservice) and run it afterwards.
 
 ```console
-docker pull teamparallax/unoconv-webservice \
- && yarn run start:docker
+# Pull the image
+docker pull teamparallax/unoconv-webservice
+
+# Run the image
+docker run \
+    --name unoconv \
+    -p 3000:3000 \
+    teamparallax/unoconv-webservice
 ```
 
 ### Swagger API
