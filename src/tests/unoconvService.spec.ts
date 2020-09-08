@@ -4,7 +4,7 @@ import {
 } from "../constants"
 import { UnoconvService } from "../service/unoconv"
 import { v4 as uuid } from "uuid"
-describe.skip("Service should pass all tests", () => {
+describe("Service should pass all tests", () => {
 	describe("it should throw errors because of invalid parameters", () => {
 		it("should throw an error because of no file path present", async () => {
 			/* Arrange */
@@ -61,7 +61,7 @@ describe.skip("Service should pass all tests", () => {
 			return await expect(conversionTry).rejects.toThrow(NoTargetFormatSpecifiedError)
 		})
 	})
-	describe("it should convert files from various text-file formats to pdf", () => {
+	describe.skip("it should convert files from various text-file formats to pdf", () => {
 		it("it should convert .txt to .pdf", async () => {
 			/* Assign */
 			const filePath = "./sample-input/sample.txt"
@@ -134,7 +134,7 @@ describe.skip("Service should pass all tests", () => {
 			expect(convertedFilePath).toMatch(/(\.\/out\/(^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$)\.pdf)/)
 		})
 	})
-	describe("it should convert files from different media formats to pdf", () => {
+	describe.skip("it should convert files from different media formats to pdf", () => {
 		it("it should convert .png to .pdf", async () => {
 			/* Assign */
 			const filePath = "./sample-input/sample.png"

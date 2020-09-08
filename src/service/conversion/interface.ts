@@ -1,9 +1,42 @@
+/**
+ * @tsoaModel
+ * @example
+ * {
+ *	"file": {
+ *		"type":"Buffer",
+ *		"data": [
+ *			67,111,110,118,
+ *			101,114,116,101,
+ *			100,32,118,105,
+ *			97,32,116,101,
+ *			97,109,112,97,
+ *			114,97,108,108,
+ *			97,120,47,117,
+ *			110,111,99,111,
+ *			110,118,45,119,
+ *			101,98,115,101,
+ *			114,118,105,99,
+ *			101,10
+ *		]
+ *	},
+ *	"filename": "assignment1",
+ *   "originalFormat": "docx",
+ *   "targetFormat": "pdf"
+ * }
+ */
 export interface IConversionRequestBody {
 	file: Buffer,
 	filename: string,
 	originalFormat: string,
 	targetFormat: string
 }
+/**
+ * @tsoaModel
+ * @example
+ * {
+ * 	"conversionId": "55309c37-aed3-4ee9-a143-f1e305333189"
+ * }
+ */
 export interface IConversionProcessingResponse {
 	conversionId: string
 }
@@ -14,12 +47,67 @@ export interface IConversionRequest {
 	path: string,
 	targetFormat: string
 }
+/**
+ * @tsoaModel
+ * @example
+ * {
+ *	"message": "converted",
+ *	"result": {
+ *		"conversionId": "55309c37-aed3-4ee9-a143-f1e305333189",
+ *		"name": "testFile",
+ *		"path": "./out/55309c37-aed3-4ee9-a143-f1e305333189.pdf",
+ *		"resultFile": {
+ *			"type":"Buffer",
+ *			"data": [
+ *				67,111,110,118,
+ *				101,114,116,101,
+ *				100,32,118,105,
+ *				97,32,116,101,
+ *				97,109,112,97,
+ *				114,97,108,108,
+ *				97,120,47,117,
+ *				110,111,99,111,
+ *				110,118,45,119,
+ *				101,98,115,101,
+ *				114,118,105,99,
+ *				101,10
+ *			]
+ *		}
+ *	}
+ * }
+ */
 export interface IConversionStatusResponse {
 	message: string,
 	result?: IConversionResult
 }
+export interface IConversionStatus {
+	conversionId: string,
+	status: string
+}
 export interface IConversionResult {
 	conversionId: string,
 	name: string,
-	path: string
+	path: string,
+	resultFile: Buffer
+}
+/**
+ * @tsoaModel
+ * @example
+ * {
+ *	"conversions": [
+ *		{
+ *			"conversionId": "55309c37-aed3-4ee9-a143-f1e305333189",
+ *			"status": "processing"
+ *		},
+ *		{
+ *			"conversionId": "940403bf-98ad-454c-a3b4-2e6ebf915ac6",
+ * 			"status": "in queue"
+ *		}
+ *	],
+ *	"remainingConversions": 7
+ * }
+ */
+export interface IConversionQueueStatus {
+	conversions: IConversionStatus[],
+	remainingConversions: number
 }

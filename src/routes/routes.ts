@@ -4,6 +4,8 @@
 import { Controller, ValidationService, FieldErrors, ValidateError, TsoaRoute, HttpStatusCodeLiteral, TsoaResponse } from 'tsoa';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { ConversionController } from './../controller/conversion/index';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { IndexController } from './../controller/index';
 import * as express from 'express';
 
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -28,12 +30,31 @@ const models: TsoaRoute.Models = {
 		"additionalProperties": false,
 	},
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	"IConversionStatus": {
+		"dataType": "refObject",
+		"properties": {
+			"conversionId": { "dataType": "string", "required": true },
+			"status": { "dataType": "string", "required": true },
+		},
+		"additionalProperties": false,
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	"IConversionQueueStatus": {
+		"dataType": "refObject",
+		"properties": {
+			"conversions": { "dataType": "array", "array": { "ref": "IConversionStatus" }, "required": true },
+			"remainingConversions": { "dataType": "double", "required": true },
+		},
+		"additionalProperties": false,
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 	"IConversionResult": {
 		"dataType": "refObject",
 		"properties": {
 			"conversionId": { "dataType": "string", "required": true },
 			"name": { "dataType": "string", "required": true },
 			"path": { "dataType": "string", "required": true },
+			"resultFile": { "dataType": "buffer", "required": true },
 		},
 		"additionalProperties": false,
 	},
@@ -43,6 +64,28 @@ const models: TsoaRoute.Models = {
 		"properties": {
 			"message": { "dataType": "string", "required": true },
 			"result": { "ref": "IConversionResult" },
+		},
+		"additionalProperties": false,
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	"IFileFormat": {
+		"dataType": "refObject",
+		"properties": {
+			"description": { "dataType": "string", "required": true },
+			"extension": { "dataType": "string", "required": true },
+			"format": { "dataType": "string", "required": true },
+			"mime": { "dataType": "string", "required": true },
+		},
+		"additionalProperties": false,
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	"IFormatList": {
+		"dataType": "refObject",
+		"properties": {
+			"document": { "dataType": "array", "array": { "ref": "IFileFormat" }, "required": true },
+			"graphics": { "dataType": "array", "array": { "ref": "IFileFormat" }, "required": true },
+			"presentation": { "dataType": "array", "array": { "ref": "IFileFormat" }, "required": true },
+			"spreadsheet": { "dataType": "array", "array": { "ref": "IFileFormat" }, "required": true },
 		},
 		"additionalProperties": false,
 	},
@@ -79,6 +122,27 @@ export function RegisterRoutes(app: express.Express) {
 			promiseHandler(controller, promise, response, next);
 		});
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	app.get('/conversion',
+		function(request: any, response: any, next: any) {
+			const args = {
+			};
+
+			// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+			let validatedArgs: any[] = [];
+			try {
+				validatedArgs = getValidatedArgs(args, request, response);
+			} catch (err) {
+				return next(err);
+			}
+
+			const controller = new ConversionController();
+
+
+			const promise = controller.getConversionQueueStatus.apply(controller, validatedArgs as any);
+			promiseHandler(controller, promise, response, next);
+		});
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 	app.get('/conversion/:fileId',
 		function(request: any, response: any, next: any) {
 			const args = {
@@ -98,6 +162,27 @@ export function RegisterRoutes(app: express.Express) {
 
 
 			const promise = controller.getConvertedFile.apply(controller, validatedArgs as any);
+			promiseHandler(controller, promise, response, next);
+		});
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	app.get('/formats',
+		function(request: any, response: any, next: any) {
+			const args = {
+			};
+
+			// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+			let validatedArgs: any[] = [];
+			try {
+				validatedArgs = getValidatedArgs(args, request, response);
+			} catch (err) {
+				return next(err);
+			}
+
+			const controller = new IndexController();
+
+
+			const promise = controller.getSupportedFormats.apply(controller, validatedArgs as any);
 			promiseHandler(controller, promise, response, next);
 		});
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa

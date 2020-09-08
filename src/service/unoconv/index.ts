@@ -54,7 +54,8 @@ export class UnoconvService {
 							await writeToFile(path, res)
 							const result: IConvertedFile = {
 								outputFilename: `${filename}.${targetFormat}`,
-								path
+								path,
+								resultFile: Buffer.from(res.toString())
 							}
 							resolve(result)
 						}

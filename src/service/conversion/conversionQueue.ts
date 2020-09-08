@@ -1,15 +1,17 @@
-/* eslint-disable @typescript-eslint/prefer-readonly */
 import {
 	IConversionProcessingResponse,
 	IConversionRequest,
 	IConversionResult,
+	IConversionStatus,
 	IConversionStatusResponse
 } from "./interface"
+import { IConvertedFile } from "../unoconv/interface"
 import { NoSuchConversionIdError } from "../../constants"
 export class ConversionQueueService {
 	private static instance: ConversionQueueService
-	private conversion!: IConversionRequest[]
-	private converted!: IConversionResult[]
+	private readonly convLog!: IConversionStatus[]
+	private readonly conversion!: IConversionRequest[]
+	private readonly converted!: IConversionResult[]
 	private currentlyConverting!: IConversionRequest | null
 	private isConverting!: boolean
 	constructor() {
@@ -17,6 +19,7 @@ export class ConversionQueueService {
 			return ConversionQueueService.instance
 		}
 		ConversionQueueService.instance = this
+		this.convLog = []
 		this.conversion = []
 		this.converted = []
 		this.currentlyConverting = null
@@ -25,64 +28,78 @@ export class ConversionQueueService {
 	}
 	public addToConversionQueue(requestObject: IConversionRequest): IConversionProcessingResponse {
 		this.conversion.push(requestObject)
+		this.convLog.push({
+			conversionId: requestObject.conversionId,
+			status: "in queue"
+		})
 		return {
 			conversionId: requestObject.conversionId
 		}
 	}
 	public addToConvertedQueue(
-		requestObject: IConversionRequest,
-		convertedPath: string
+		conversionId: string,
+		conversionResult: IConvertedFile
 	): IConversionProcessingResponse {
 		const {
-			conversionId,
-			name
-		} = requestObject
+			outputFilename,
+			path,
+			resultFile
+		} = conversionResult
 		this.converted.push({
 			conversionId,
-			name,
-			path: convertedPath
+			name: outputFilename,
+			path,
+			resultFile
 		})
 		this.currentlyConvertingFile = null
 		return {
 			conversionId
 		}
 	}
+	public changeConvLogEntry(conversionId: string, status: string): void {
+		const element = this.convLog.find(convElement => convElement.conversionId === conversionId)
+		if (!element) {
+			throw new NoSuchConversionIdError("No such conversion element")
+		}
+		element.status = status
+	}
 	public getNextQueueElement(): IConversionRequest | undefined {
 		return this.conversionQueue.shift()
 	}
 	public getStatusById(conversionId: string): IConversionStatusResponse {
-		const response = (
-			message: string,
-			result?: IConversionResult
-		): IConversionStatusResponse => ({
-			message,
-			result
-		})
-		const isInConversionQueue: boolean = this.isInQueue(conversionId, this.conversionQueue)
-		const isInConvertedQueue: boolean = this.isInQueue(conversionId, this.convertedQueue)
+		const isInConversionQueue: boolean = this.conversionQueue.filter(
+			(item: IConversionRequest) => item.conversionId === conversionId
+		).length > 0
+		const isInConvertedQueue: boolean = this.convertedQueue.filter(
+			(item: IConversionResult) => item.conversionId === conversionId
+		).length > 0
 		if (this.currentlyConvertingFile?.conversionId === conversionId) {
-			return response("processing")
+			return this.response("processing")
 		}
 		if (isInConversionQueue) {
-			return response("in queue")
+			return this.response("in queue")
 		}
 		if (isInConvertedQueue) {
 			const convertedFile = this.convertedQueue
 				.filter(item => item.conversionId === conversionId)[0]
-			return response("converted", convertedFile)
+			return this.response("converted", convertedFile)
 		}
 		else {
 			throw new NoSuchConversionIdError(`No conversion request found for given conversionId ${conversionId}`)
 		}
 	}
-	isInQueue(
-		conversionId: string,
-		queue: IConversionRequest[] | IConversionResult[]
-	): boolean {
-		return queue.filter(item => item.conversionId === conversionId).length > 0
-	}
 	public removeFromConvertedQueue(removee: IConversionResult): void {
 		this.convertedQueue.splice(this.convertedQueue.indexOf(removee), 1)
+	}
+	private response(message: string, result?: IConversionResult): IConversionStatusResponse {
+		const response = {
+			message,
+			result
+		}
+		return response
+	}
+	get conversionLog(): IConversionStatus[] {
+		return this.convLog
 	}
 	get conversionQueue(): IConversionRequest[] {
 		return this.conversion

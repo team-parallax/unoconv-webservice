@@ -16,7 +16,10 @@
 					"conversionId"
 				],
 				"type": "object",
-				"additionalProperties": false
+				"additionalProperties": false,
+				"example": {
+					"conversionId": "55309c37-aed3-4ee9-a143-f1e305333189"
+				}
 			},
 			"IConversionRequestBody": {
 				"properties": {
@@ -41,7 +44,112 @@
 					"targetFormat"
 				],
 				"type": "object",
+				"additionalProperties": false,
+				"example": {
+					"file": {
+						"type": "Buffer",
+						"data": [
+							67,
+							111,
+							110,
+							118,
+							101,
+							114,
+							116,
+							101,
+							100,
+							32,
+							118,
+							105,
+							97,
+							32,
+							116,
+							101,
+							97,
+							109,
+							112,
+							97,
+							114,
+							97,
+							108,
+							108,
+							97,
+							120,
+							47,
+							117,
+							110,
+							111,
+							99,
+							111,
+							110,
+							118,
+							45,
+							119,
+							101,
+							98,
+							115,
+							101,
+							114,
+							118,
+							105,
+							99,
+							101,
+							10
+						]
+					},
+					"filename": "assignment1",
+					"originalFormat": "docx",
+					"targetFormat": "pdf"
+				}
+			},
+			"IConversionStatus": {
+				"properties": {
+					"conversionId": {
+						"type": "string"
+					},
+					"status": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"conversionId",
+					"status"
+				],
+				"type": "object",
 				"additionalProperties": false
+			},
+			"IConversionQueueStatus": {
+				"properties": {
+					"conversions": {
+						"items": {
+							"$ref": "#/components/schemas/IConversionStatus"
+						},
+						"type": "array"
+					},
+					"remainingConversions": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"conversions",
+					"remainingConversions"
+				],
+				"type": "object",
+				"additionalProperties": false,
+				"example": {
+					"conversions": [
+						{
+							"conversionId": "55309c37-aed3-4ee9-a143-f1e305333189",
+							"status": "processing"
+						},
+						{
+							"conversionId": "940403bf-98ad-454c-a3b4-2e6ebf915ac6",
+							"status": "in queue"
+						}
+					],
+					"remainingConversions": 7
+				}
 			},
 			"IConversionResult": {
 				"properties": {
@@ -53,12 +161,17 @@
 					},
 					"path": {
 						"type": "string"
+					},
+					"resultFile": {
+						"type": "string",
+						"format": "byte"
 					}
 				},
 				"required": [
 					"conversionId",
 					"name",
-					"path"
+					"path",
+					"resultFile"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -76,7 +189,184 @@
 					"message"
 				],
 				"type": "object",
+				"additionalProperties": false,
+				"example": {
+					"message": "converted",
+					"result": {
+						"conversionId": "55309c37-aed3-4ee9-a143-f1e305333189",
+						"name": "testFile",
+						"path": "./out/55309c37-aed3-4ee9-a143-f1e305333189.pdf",
+						"resultFile": {
+							"type": "Buffer",
+							"data": [
+								67,
+								111,
+								110,
+								118,
+								101,
+								114,
+								116,
+								101,
+								100,
+								32,
+								118,
+								105,
+								97,
+								32,
+								116,
+								101,
+								97,
+								109,
+								112,
+								97,
+								114,
+								97,
+								108,
+								108,
+								97,
+								120,
+								47,
+								117,
+								110,
+								111,
+								99,
+								111,
+								110,
+								118,
+								45,
+								119,
+								101,
+								98,
+								115,
+								101,
+								114,
+								118,
+								105,
+								99,
+								101,
+								10
+							]
+						}
+					}
+				}
+			},
+			"IFileFormat": {
+				"properties": {
+					"description": {
+						"type": "string"
+					},
+					"extension": {
+						"type": "string"
+					},
+					"format": {
+						"type": "string"
+					},
+					"mime": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"description",
+					"extension",
+					"format",
+					"mime"
+				],
+				"type": "object",
 				"additionalProperties": false
+			},
+			"IFormatList": {
+				"properties": {
+					"document": {
+						"items": {
+							"$ref": "#/components/schemas/IFileFormat"
+						},
+						"type": "array"
+					},
+					"graphics": {
+						"items": {
+							"$ref": "#/components/schemas/IFileFormat"
+						},
+						"type": "array"
+					},
+					"presentation": {
+						"items": {
+							"$ref": "#/components/schemas/IFileFormat"
+						},
+						"type": "array"
+					},
+					"spreadsheet": {
+						"items": {
+							"$ref": "#/components/schemas/IFileFormat"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"document",
+					"graphics",
+					"presentation",
+					"spreadsheet"
+				],
+				"type": "object",
+				"additionalProperties": false,
+				"example": {
+					"document": [
+						{
+							"format": "mediawiki",
+							"extension": "txt",
+							"description": "MediaWiki",
+							"mime": "text/plain"
+						},
+						{
+							"format": "odt",
+							"extension": "odt",
+							"description": "ODF Text Document",
+							"mime": "application/vnd.oasis.opendocument.text"
+						}
+					],
+					"graphics": [
+						{
+							"format": "jpg",
+							"extension": "jpg",
+							"description": "Joint Photographic Experts Group",
+							"mime": "image/jpeg"
+						},
+						{
+							"format": "png",
+							"extension": "png",
+							"description": "Portable Network Graphic",
+							"mime": "image/png"
+						}
+					],
+					"presentation": [
+						{
+							"format": "odp",
+							"extension": "odp",
+							"description": "ODF Presentation",
+							"mime": "application/vnd.oasis.opendocument.presentation"
+						},
+						{
+							"format": "pptx",
+							"extension": "pptx",
+							"description": "Microsoft PowerPoint 2007/2010 XML",
+							"mime": "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+						}
+					],
+					"spreadsheet": [
+						{
+							"format": "ods",
+							"extension": "ods",
+							"description": "ODF Spreadsheet",
+							"mime": "application/vnd.oasis.opendocument.spreadsheet"
+						},
+						{
+							"format": "xls",
+							"extension": "xls",
+							"description": "Microsoft Excel 97/2000/XP",
+							"mime": "application/vnd.ms-excel"
+						}
+					]
+				}
 			}
 		},
 		"securitySchemes": {}
@@ -124,6 +414,26 @@
 						}
 					}
 				}
+			},
+			"get": {
+				"operationId": "GetConversionQueueStatus",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/IConversionQueueStatus"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Conversion"
+				],
+				"security": [],
+				"parameters": []
 			}
 		},
 		"/conversion/{fileId}": {
@@ -155,6 +465,28 @@
 						}
 					}
 				]
+			}
+		},
+		"/formats": {
+			"get": {
+				"operationId": "GetSupportedFormats",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/IFormatList"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Conversion-Formats"
+				],
+				"security": [],
+				"parameters": []
 			}
 		}
 	},

@@ -79,8 +79,8 @@ describe("ConversionQueueService should pass all tests", () => {
 		const conversionQueue = queueService.conversionQueue
 		const convertedQueue = queueService.convertedQueue
 		/* Act */
-		const isInConversionQueue = queueService.isInQueue(conversionId, conversionQueue)
-		const isInConvertedQueue = queueService.isInQueue(conversionId, convertedQueue)
+		const isInConversionQueue = conversionQueue.filter(item => item.conversionId === conversionId).length > 0
+		const isInConvertedQueue = convertedQueue.filter(item => item.conversionId === conversionId).length > 0
 		/* Assert */
 		expect(queueService).toBeDefined()
 		expect(isInConversionQueue).toBe(true)
@@ -92,12 +92,16 @@ describe("ConversionQueueService should pass all tests", () => {
 		const request: IConversionRequest = generateConversionRequests()[0]
 		const {
 			conversionId
-		} = queueService.addToConvertedQueue(request, "some/path")
+		} = queueService.addToConvertedQueue(request.conversionId, {
+			outputFilename: request.name,
+			path: request.path,
+			resultFile: Buffer.from("someBuffer")
+		})
 		const conversionQueue = queueService.conversionQueue
 		const convertedQueue = queueService.convertedQueue
 		/* Act */
-		const isInConversionQueue = queueService.isInQueue(conversionId, conversionQueue)
-		const isInConvertedQueue = queueService.isInQueue(conversionId, convertedQueue)
+		const isInConversionQueue = conversionQueue.filter(item => item.conversionId === conversionId).length > 0
+		const isInConvertedQueue = convertedQueue.filter(item => item.conversionId === conversionId).length > 0
 		/* Assert */
 		expect(queueService).toBeDefined()
 		expect(isInConversionQueue).toBe(false)
@@ -167,20 +171,28 @@ describe("ConversionQueueService should pass all tests", () => {
 				name,
 				path
 			} = conversionRequest
-			queueService.addToConvertedQueue(conversionRequest, path)
+			const buffer = Buffer.from("someBuffer")
+			queueService.addToConvertedQueue(conversionId, {
+				outputFilename: name,
+				path,
+				resultFile: buffer
+			})
 			const getStatus = jest.fn(
 				(conversionId, queueService) => queueService.getStatusById(conversionId)
 			)
 			/* Act */
 			getStatus(conversionId, queueService)
-			/* Assert */
+			expect.assertions(3)
+			expect(getStatus).toReturn()
+			expect(getStatus).toReturnTimes(1)
 			expect(getStatus).toReturnWith(expect.objectContaining({
 				message: CConvertedStatusResponse.message,
-				result: {
+				result: expect.objectContaining({
 					conversionId,
 					name,
-					path
-				}
+					path,
+					resultFile: buffer
+				})
 			}))
 		})
 		it("It should set 'isConverting' to false, after conversionRequest is added to 'convertedQueue'", () => {
@@ -193,7 +205,11 @@ describe("ConversionQueueService should pass all tests", () => {
 				name,
 				path
 			} = conversionRequest
-			queueService.addToConvertedQueue(conversionRequest, path)
+			queueService.addToConvertedQueue(conversionId, {
+				outputFilename: conversionRequest.name,
+				path: conversionRequest.path,
+				resultFile: Buffer.from("someBuffer")
+			})
 			const getStatus = jest.fn(
 				(conversionId, queueService) => queueService.getStatusById(conversionId)
 			)

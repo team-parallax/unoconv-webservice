@@ -1,6 +1,7 @@
 import { ConversionQueueService } from "./conversionQueue"
 import {
 	IConversionProcessingResponse,
+	IConversionQueueStatus,
 	IConversionRequest,
 	IConversionRequestBody,
 	IConversionStatusResponse
@@ -8,8 +9,11 @@ import {
 import { Inject } from "typescript-ioc"
 import { Logger } from "../logger"
 import { UnoconvService } from "../unoconv"
+import {
+	deleteFile,
+	writeToFile
+} from "../file-io"
 import { v4 as uuidV4 } from "uuid"
-import { writeToFile } from "../file-io"
 export class ConversionService {
 	@Inject
 	private readonly conversionQueueService!: ConversionQueueService
@@ -21,7 +25,7 @@ export class ConversionService {
 	public addToConversionQueue(requestObject: IConversionRequest): IConversionProcessingResponse {
 		const {
 			conversionId
-		} = this.conversionQueueService.addToConversionQueue(requestObject)
+		} = this.queueService.addToConversionQueue(requestObject)
 		// eslint-disable-next-line no-void
 		void this.update()
 		return {
@@ -29,25 +33,30 @@ export class ConversionService {
 		}
 	}
 	async convertFile(): Promise<void> {
-		const fileToProcess = this.conversionQueueService.getNextQueueElement()
+		const fileToProcess = this.queueService.getNextQueueElement()
 		if (fileToProcess) {
-			this.logger.log(`Trying to convert ${fileToProcess.conversionId}`)
-			this.conversionQueueService.isCurrentlyConverting = true
-			this.conversionQueueService.currentlyConvertingFile = fileToProcess
+			const {
+				conversionId,
+				name,
+				path,
+				targetFormat
+			} = fileToProcess
+			this.queueService.isCurrentlyConverting = true
+			this.queueService.currentlyConvertingFile = fileToProcess
+			this.queueService.changeConvLogEntry(conversionId, "processing")
 			try {
 				const resp = await UnoconvService.convertToTarget({
-					conversionId: fileToProcess.conversionId,
-					filePath: fileToProcess.path,
-					outputFilename: fileToProcess.name,
-					targetFormat: fileToProcess.targetFormat
+					conversionId,
+					filePath: path,
+					outputFilename: name,
+					targetFormat
 				})
+				await deleteFile(path)
 				this.conversionQueueService.addToConvertedQueue(
-					fileToProcess,
-					resp.path
+					conversionId,
+					resp
 				)
-				this.logger.log(
-					`Conversion done for ${fileToProcess.conversionId}. Wrote data to ${resp.path}.`
-				)
+				this.queueService.changeConvLogEntry(conversionId, "converted")
 			}
 			catch (err) {
 				this.logger.error(err)
@@ -59,9 +68,14 @@ export class ConversionService {
 			}
 		}
 	}
+	public getConversionQueueStatus(): IConversionQueueStatus {
+		return {
+			conversions: this.queueService.conversionLog,
+			remainingConversions: this.queueLength
+		}
+	}
 	public getConvertedFile(fileId: string): IConversionStatusResponse {
-		// Todo: Delete corresponding input file when conversionQueueService returns 'converted' status
-		return this.conversionQueueService.getStatusById(fileId)
+		return this.queueService.getStatusById(fileId)
 	}
 	public async processConversionRequest({
 		file,
@@ -88,15 +102,15 @@ export class ConversionService {
 		return undefined
 	}
 	get isCurrentlyConverting(): boolean {
-		return this.conversionQueueService.isCurrentlyConverting
+		return this.queueService.isCurrentlyConverting
 	}
 	set isCurrentlyConverting(isConverting: boolean) {
-		this.conversionQueueService.isCurrentlyConverting = isConverting
+		this.queueService.isCurrentlyConverting = isConverting
 	}
 	get queueService(): ConversionQueueService {
 		return this.conversionQueueService
 	}
 	get queueLength(): number {
-		return this.conversionQueueService.conversionQueue.length
+		return this.queueService.conversionQueue.length
 	}
 }
