@@ -1,3 +1,53 @@
+import { EConversionStatus } from "./enum"
+export interface IConvertable {
+	conversionId: string
+}
+export interface IConversionStatus extends IConvertable {
+	status: EConversionStatus
+}
+export interface IConversionInQueue extends IConversionStatus {
+	queuePosition: number
+}
+export interface IConversionInProgress extends IConversionStatus {}
+export interface IConversionFinished extends IConversionStatus {
+	resultFile: Buffer
+}
+/**
+ * @tsoaModel
+ * @example
+ * {
+ * 	"conversionId": "55309c37-aed3-4ee9-a143-f1e305333189"
+ * }
+ */
+export interface IConversionProcessingResponse {
+	conversionId: string
+}
+/**
+ * @tsoaModel
+ * @example
+ * {
+ *	"conversions": [
+ *		{
+ *			"conversionId": "55309c37-aed3-4ee9-a143-f1e305333189",
+ *			"status": "converted"
+ *		},
+ *		{
+ *			"conversionId": "52a22c37-aed3-4ee9-a442-f1e30537v189",
+ *			"status": "processing"
+ *		},
+ *		{
+ *			"conversionId": "940403bf-98ad-454c-a3b4-2e6ebf915ac6",
+ * 			"status": "in queue",
+ * 			"queuePosition": 1
+ *		}
+ *	],
+ *	"remainingConversions": 1
+ * }
+ */
+export interface IConversionQueueStatus {
+	conversions: IConversionStatus[],
+	remainingConversions: number
+}
 /**
  * @tsoaModel
  * @example
@@ -29,16 +79,6 @@ export interface IConversionRequestBody {
 	filename: string,
 	originalFormat: string,
 	targetFormat: string
-}
-/**
- * @tsoaModel
- * @example
- * {
- * 	"conversionId": "55309c37-aed3-4ee9-a143-f1e305333189"
- * }
- */
-export interface IConversionProcessingResponse {
-	conversionId: string
 }
 export interface IConversionRequest {
 	conversionId: string,
@@ -77,11 +117,7 @@ export interface IConversionRequest {
  * }
  */
 export interface IConversionStatusResponse {
-	message: string,
-	result?: IConversionResult
-}
-export interface IConversionStatus {
-	conversionId: string,
+	result?: IConversionResult,
 	status: string
 }
 export interface IConversionResult {
@@ -89,25 +125,4 @@ export interface IConversionResult {
 	name: string,
 	path: string,
 	resultFile: Buffer
-}
-/**
- * @tsoaModel
- * @example
- * {
- *	"conversions": [
- *		{
- *			"conversionId": "55309c37-aed3-4ee9-a143-f1e305333189",
- *			"status": "processing"
- *		},
- *		{
- *			"conversionId": "940403bf-98ad-454c-a3b4-2e6ebf915ac6",
- * 			"status": "in queue"
- *		}
- *	],
- *	"remainingConversions": 7
- * }
- */
-export interface IConversionQueueStatus {
-	conversions: IConversionStatus[],
-	remainingConversions: number
 }

@@ -12,8 +12,7 @@ describe("ConversionService should pass all tests", () => {
 		expect(queueLength).toBe(0)
 		expect(isConverting).toBe(false)
 	})
-	// Todo: Refactor!
-	it("It should add items to the queue and return a uuid-string and correct current status for each element", async () => {
+	it("It should add items to the queue and return a uuid-string and correct current status for each element", async done => {
 		/* Arrange */
 		const dataSetSize = 3
 		const service = new ConversionService()
@@ -45,18 +44,21 @@ describe("ConversionService should pass all tests", () => {
 		expect(latestQueueLength).toBe(dataSetSize - 1)
 		expect(service.isCurrentlyConverting).toBe(true)
 		expect(getStatus).nthReturnedWith(1, {
-			message: "processing",
-			result: undefined
+			conversionId: firstConversionId,
+			status: "processing"
 		})
 		for (const response of convProcessingResps) {
 			// Add 1 to make it 1-indexed
 			const index = convProcessingResps.indexOf(response) + 1
+			// Add 1 to 'include' first conversion to the conversion-stack
+			const stackIndex = index + 1
 			expect(response.conversionId).toMatch(/^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i)
-			// Add 1 to 'include' first conversion to stack
-			expect(getStatus).nthReturnedWith(index + 1, {
-				message: "in queue",
-				result: undefined
+			expect(getStatus).nthReturnedWith(stackIndex, {
+				conversionId: response.conversionId,
+				queuePosition: index,
+				status: "in queue"
 			})
 		}
+		done()
 	})
 })

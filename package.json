@@ -23,6 +23,7 @@
 		"start": "ts-node src/app.ts",
 		"start:dev": "yarn tsoa:create:local && yarn start",
 		"start:docker": "docker run --name unoconv -v $(pwd)/out:/app/out -p 3000:3000 teamparallax/unoconv-webservice",
+		"start:docker:dev": "yarn build:docker && yarn start:docker",
 		"test": "jest --config ./jest.config.js --runInBand",
 		"test:single": "jest --config ./jest.config.js  ",
 		"tsoa:create:local": "yarn tsoa:create && sed -i 's/https/http/g' swagger.json",

@@ -1,9 +1,12 @@
+import { EConversionStatus } from "./enum"
 import {
+	IConversionFinished,
+	IConversionInProgress,
+	IConversionInQueue,
 	IConversionProcessingResponse,
 	IConversionRequest,
 	IConversionResult,
-	IConversionStatus,
-	IConversionStatusResponse
+	IConversionStatus
 } from "./interface"
 import { IConvertedFile } from "../unoconv/interface"
 import { NoSuchConversionIdError } from "../../constants"
@@ -30,7 +33,7 @@ export class ConversionQueueService {
 		this.conversion.push(requestObject)
 		this.convLog.push({
 			conversionId: requestObject.conversionId,
-			status: "in queue"
+			status: EConversionStatus.inQueue
 		})
 		return {
 			conversionId: requestObject.conversionId
@@ -56,7 +59,7 @@ export class ConversionQueueService {
 			conversionId
 		}
 	}
-	public changeConvLogEntry(conversionId: string, status: string): void {
+	public changeConvLogEntry(conversionId: string, status: EConversionStatus): void {
 		const element = this.convLog.find(convElement => convElement.conversionId === conversionId)
 		if (!element) {
 			throw new NoSuchConversionIdError("No such conversion element")
@@ -66,7 +69,7 @@ export class ConversionQueueService {
 	public getNextQueueElement(): IConversionRequest | undefined {
 		return this.conversionQueue.shift()
 	}
-	public getStatusById(conversionId: string): IConversionStatusResponse {
+	public getStatusById(conversionId: string): IConversionStatus {
 		const isInConversionQueue: boolean = this.conversionQueue.filter(
 			(item: IConversionRequest) => item.conversionId === conversionId
 		).length > 0
@@ -74,15 +77,13 @@ export class ConversionQueueService {
 			(item: IConversionResult) => item.conversionId === conversionId
 		).length > 0
 		if (this.currentlyConvertingFile?.conversionId === conversionId) {
-			return this.response("processing")
+			return this.response(EConversionStatus.processing, conversionId)
 		}
 		if (isInConversionQueue) {
-			return this.response("in queue")
+			return this.response(EConversionStatus.inQueue, conversionId)
 		}
 		if (isInConvertedQueue) {
-			const convertedFile = this.convertedQueue
-				.filter(item => item.conversionId === conversionId)[0]
-			return this.response("converted", convertedFile)
+			return this.response(EConversionStatus.converted, conversionId)
 		}
 		else {
 			throw new NoSuchConversionIdError(`No conversion request found for given conversionId ${conversionId}`)
@@ -91,10 +92,35 @@ export class ConversionQueueService {
 	public removeFromConvertedQueue(removee: IConversionResult): void {
 		this.convertedQueue.splice(this.convertedQueue.indexOf(removee), 1)
 	}
-	private response(message: string, result?: IConversionResult): IConversionStatusResponse {
-		const response = {
-			message,
-			result
+	private response(
+		status: EConversionStatus,
+		conversionId: string
+	): IConversionInQueue | IConversionInProgress | IConversionFinished {
+		if (status === EConversionStatus.inQueue) {
+			// Add one to have 1-indexed queue
+			const queuePosition: number = this.conversionQueue.findIndex(
+				item => item.conversionId === conversionId
+			) + 1
+			const response: IConversionInQueue = {
+				conversionId,
+				queuePosition,
+				status
+			}
+			return response
+		}
+		else if (status === EConversionStatus.converted) {
+			const convertedFile = this.convertedQueue
+				.filter(item => item.conversionId === conversionId)[0]
+			const response: IConversionFinished = {
+				conversionId,
+				resultFile: convertedFile.resultFile,
+				status
+			}
+			return response
+		}
+		const response: IConversionInProgress = {
+			conversionId,
+			status
 		}
 		return response
 	}

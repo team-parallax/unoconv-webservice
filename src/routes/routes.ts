@@ -30,11 +30,16 @@ const models: TsoaRoute.Models = {
 		"additionalProperties": false,
 	},
 	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+	"EConversionStatus": {
+		"dataType": "refEnum",
+		"enums": ["converted", "in queue", "processing"],
+	},
+	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 	"IConversionStatus": {
 		"dataType": "refObject",
 		"properties": {
 			"conversionId": { "dataType": "string", "required": true },
-			"status": { "dataType": "string", "required": true },
+			"status": { "ref": "EConversionStatus", "required": true },
 		},
 		"additionalProperties": false,
 	},
@@ -44,26 +49,6 @@ const models: TsoaRoute.Models = {
 		"properties": {
 			"conversions": { "dataType": "array", "array": { "ref": "IConversionStatus" }, "required": true },
 			"remainingConversions": { "dataType": "double", "required": true },
-		},
-		"additionalProperties": false,
-	},
-	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-	"IConversionResult": {
-		"dataType": "refObject",
-		"properties": {
-			"conversionId": { "dataType": "string", "required": true },
-			"name": { "dataType": "string", "required": true },
-			"path": { "dataType": "string", "required": true },
-			"resultFile": { "dataType": "buffer", "required": true },
-		},
-		"additionalProperties": false,
-	},
-	// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-	"IConversionStatusResponse": {
-		"dataType": "refObject",
-		"properties": {
-			"message": { "dataType": "string", "required": true },
-			"result": { "ref": "IConversionResult" },
 		},
 		"additionalProperties": false,
 	},
