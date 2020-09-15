@@ -109,16 +109,14 @@ describe("ConversionQueueService should pass all tests", () => {
 	})
 	describe("It should return correct IConversionStatusResponses", () => {
 		const CInQueueStatusResponse = {
-			message: "in queue",
-			result: undefined
+			status: "in queue"
 		}
 		const CConvertedStatusResponse = {
-			message: "converted",
-			result: undefined
+			resultFile: undefined,
+			status: "converted"
 		}
 		const CIsInProgressStatusResponse = {
-			message: "processing",
-			result: undefined
+			status: "processing"
 		}
 		it("It should throw an error because there is no such conversionId", () => {
 			/* Arrange */
@@ -141,10 +139,17 @@ describe("ConversionQueueService should pass all tests", () => {
 			const getStatus = jest.fn(
 				(conversionId, queueService) => queueService.getStatusById(conversionId)
 			)
+			const queuePosition: number = queueService.conversionQueue.findIndex(
+				item => item.conversionId === conversionId
+			) + 1
 			/* Act */
 			getStatus(conversionId, queueService)
 			/* Assert */
-			expect(getStatus).toReturnWith(CInQueueStatusResponse)
+			expect(getStatus).toReturnWith({
+				...CInQueueStatusResponse,
+				conversionId,
+				queuePosition
+			})
 		})
 		it("It should return with 'processing' response", () => {
 			/* Arrange */
@@ -160,7 +165,10 @@ describe("ConversionQueueService should pass all tests", () => {
 			queueService.currentlyConvertingFile = conversionRequest
 			getStatus(conversionId, queueService)
 			/* Assert */
-			expect(getStatus).toReturnWith(CIsInProgressStatusResponse)
+			expect(getStatus).toReturnWith({
+				...CIsInProgressStatusResponse,
+				conversionId
+			})
 		})
 		it("It should return with 'converted' response", () => {
 			/* Arrange */
@@ -185,19 +193,15 @@ describe("ConversionQueueService should pass all tests", () => {
 			expect.assertions(3)
 			expect(getStatus).toReturn()
 			expect(getStatus).toReturnTimes(1)
-			expect(getStatus).toReturnWith(expect.objectContaining({
-				message: CConvertedStatusResponse.message,
-				result: expect.objectContaining({
-					conversionId,
-					name,
-					path,
-					resultFile: buffer
-				})
-			}))
+			expect(getStatus).toReturnWith({
+				conversionId,
+				resultFile: buffer,
+				status: CConvertedStatusResponse.status
+			})
 		})
 		it("It should set 'isConverting' to false, after conversionRequest is added to 'convertedQueue'", () => {
-			expect.assertions(4)
 			/* Arrange */
+			const buffer = Buffer.from("someBuffer")
 			const queueService = new ConversionQueueService()
 			const conversionRequest = generateConversionRequests()[0]
 			const {
@@ -208,7 +212,7 @@ describe("ConversionQueueService should pass all tests", () => {
 			queueService.addToConvertedQueue(conversionId, {
 				outputFilename: conversionRequest.name,
 				path: conversionRequest.path,
-				resultFile: Buffer.from("someBuffer")
+				resultFile: buffer
 			})
 			const getStatus = jest.fn(
 				(conversionId, queueService) => queueService.getStatusById(conversionId)
@@ -229,10 +233,11 @@ describe("ConversionQueueService should pass all tests", () => {
 				isCurrentlyConverting, currentlyConvertingFile
 			} = getIsCurrentlyConvertingInfo(queueService)
 			/* Assert */
-			expect(getStatus).toReturnWith(expect.objectContaining({
-				message: CConvertedStatusResponse.message,
-				result: expect.anything()
-			}))
+			expect(getStatus).toReturnWith({
+				conversionId,
+				resultFile: buffer,
+				status: CConvertedStatusResponse.status
+			})
 			expect(getIsCurrentlyConvertingInfo).toBeCalled()
 			expect(isCurrentlyConverting).toBe(false)
 			expect(currentlyConvertingFile).toBe(null)

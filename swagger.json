@@ -102,13 +102,21 @@
 					"targetFormat": "pdf"
 				}
 			},
+			"EConversionStatus": {
+				"enum": [
+					"converted",
+					"in queue",
+					"processing"
+				],
+				"type": "string"
+			},
 			"IConversionStatus": {
 				"properties": {
 					"conversionId": {
 						"type": "string"
 					},
 					"status": {
-						"type": "string"
+						"$ref": "#/components/schemas/EConversionStatus"
 					}
 				},
 				"required": [
@@ -144,110 +152,15 @@
 							"status": "processing"
 						},
 						{
+							"conversionId": "52a22c37-aed3-4ee9-a442-f1e30537v189",
+							"status": "processing"
+						},
+						{
 							"conversionId": "940403bf-98ad-454c-a3b4-2e6ebf915ac6",
 							"status": "in queue"
 						}
 					],
 					"remainingConversions": 7
-				}
-			},
-			"IConversionResult": {
-				"properties": {
-					"conversionId": {
-						"type": "string"
-					},
-					"name": {
-						"type": "string"
-					},
-					"path": {
-						"type": "string"
-					},
-					"resultFile": {
-						"type": "string",
-						"format": "byte"
-					}
-				},
-				"required": [
-					"conversionId",
-					"name",
-					"path",
-					"resultFile"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"IConversionStatusResponse": {
-				"properties": {
-					"message": {
-						"type": "string"
-					},
-					"result": {
-						"$ref": "#/components/schemas/IConversionResult"
-					}
-				},
-				"required": [
-					"message"
-				],
-				"type": "object",
-				"additionalProperties": false,
-				"example": {
-					"message": "converted",
-					"result": {
-						"conversionId": "55309c37-aed3-4ee9-a143-f1e305333189",
-						"name": "testFile",
-						"path": "./out/55309c37-aed3-4ee9-a143-f1e305333189.pdf",
-						"resultFile": {
-							"type": "Buffer",
-							"data": [
-								67,
-								111,
-								110,
-								118,
-								101,
-								114,
-								116,
-								101,
-								100,
-								32,
-								118,
-								105,
-								97,
-								32,
-								116,
-								101,
-								97,
-								109,
-								112,
-								97,
-								114,
-								97,
-								108,
-								108,
-								97,
-								120,
-								47,
-								117,
-								110,
-								111,
-								99,
-								111,
-								110,
-								118,
-								45,
-								119,
-								101,
-								98,
-								115,
-								101,
-								114,
-								118,
-								105,
-								99,
-								101,
-								10
-							]
-						}
-					}
 				}
 			},
 			"IFileFormat": {
@@ -445,7 +358,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/IConversionStatusResponse"
+									"$ref": "#/components/schemas/IConversionStatus"
 								}
 							}
 						}

@@ -1,10 +1,11 @@
 import { ConversionQueueService } from "./conversionQueue"
+import { EConversionStatus } from "./enum"
 import {
 	IConversionProcessingResponse,
 	IConversionQueueStatus,
 	IConversionRequest,
 	IConversionRequestBody,
-	IConversionStatusResponse
+	IConversionStatus
 } from "./interface"
 import { Inject } from "typescript-ioc"
 import { Logger } from "../logger"
@@ -43,7 +44,7 @@ export class ConversionService {
 			} = fileToProcess
 			this.queueService.isCurrentlyConverting = true
 			this.queueService.currentlyConvertingFile = fileToProcess
-			this.queueService.changeConvLogEntry(conversionId, "processing")
+			this.queueService.changeConvLogEntry(conversionId, EConversionStatus.processing)
 			try {
 				const resp = await UnoconvService.convertToTarget({
 					conversionId,
@@ -56,7 +57,7 @@ export class ConversionService {
 					conversionId,
 					resp
 				)
-				this.queueService.changeConvLogEntry(conversionId, "converted")
+				this.queueService.changeConvLogEntry(conversionId, EConversionStatus.converted)
 			}
 			catch (err) {
 				this.logger.error(err)
@@ -69,12 +70,26 @@ export class ConversionService {
 		}
 	}
 	public getConversionQueueStatus(): IConversionQueueStatus {
+		const conversions = this.queueService.conversionLog.map(
+			item => {
+				const queuePosition: number = this.queueService.conversionQueue.findIndex(
+					element => element.conversionId === item.conversionId
+				)
+				if (item.status === EConversionStatus.inQueue) {
+					return {
+						...item,
+						queuePosition
+					}
+				}
+				return item
+			}
+		)
 		return {
-			conversions: this.queueService.conversionLog,
+			conversions,
 			remainingConversions: this.queueLength
 		}
 	}
-	public getConvertedFile(fileId: string): IConversionStatusResponse {
+	public getConvertedFile(fileId: string): IConversionStatus {
 		return this.queueService.getStatusById(fileId)
 	}
 	public async processConversionRequest({

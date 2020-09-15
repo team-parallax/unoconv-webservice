@@ -13,7 +13,7 @@ import {
 	IConversionProcessingResponse,
 	IConversionQueueStatus,
 	IConversionRequestBody,
-	IConversionStatusResponse
+	IConversionStatus
 } from "../../service/conversion/interface"
 import { Inject } from "typescript-ioc"
 @Route("/conversion")
@@ -32,14 +32,15 @@ export class ConversionController extends Controller {
 		return this.conversionService.getConversionQueueStatus()
 	}
 	@Get("{fileId}")
-	public getConvertedFile(@Path() fileId: string): IConversionStatusResponse {
+	public getConvertedFile(@Path() fileId: string): IConversionStatus {
 		try {
 			return this.conversionService.getConvertedFile(fileId)
 		}
 		catch (err) {
 			this.setStatus(EHttpResponseCodes.notFound)
 			return {
-				message: err.message
+				conversionId: fileId,
+				status: err.message
 			}
 		}
 	}
