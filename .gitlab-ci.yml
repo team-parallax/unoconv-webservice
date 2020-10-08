@@ -38,16 +38,14 @@ build_docker_tagged:
   before_script:
       - echo "Build docker image"
   variables:
-      IMAGE: teamparallax/unoconv-webservice
+      IMAGE: ${IMAGE_BASE_NAME}
       DOCKER_HOST: tcp://localhost:2375
       DOCKER_PASSWORD: ${DOCKER_PASSWORD}
       DOCKER_USER: ${DOCKER_USER}
       DOCKER_TLS_CERTDIR: ""
       REGISTRY: ${REGISTRY}
   script:
-    - apk add --repository="http://dl-cdn.alpinelinux.org/alpine/edge/community" \
-        nodejs-current=14.13.0-r0 \
-        nodejs-current-np
+    - apk add --repository="http://dl-cdn.alpinelinux.org/alpine/edge/community" nodejs-current=14.13.0-r0 nodejs-current-npm
     - echo -n "${DOCKER_PASSWORD}" | docker login -u ${DOCKER_USER} --password-stdin ${REGISTRY}
     - docker build -t ${IMAGE}:`node -p -e "require('./package.json').version"` -f ./Dockerfile .
     - docker push ${IMAGE}
