@@ -149,7 +149,7 @@
 					"conversions": [
 						{
 							"conversionId": "55309c37-aed3-4ee9-a143-f1e305333189",
-							"status": "processing"
+							"status": "converted"
 						},
 						{
 							"conversionId": "52a22c37-aed3-4ee9-a442-f1e30537v189",
@@ -157,10 +157,11 @@
 						},
 						{
 							"conversionId": "940403bf-98ad-454c-a3b4-2e6ebf915ac6",
-							"status": "in queue"
+							"status": "in queue",
+							"queuePosition": 1
 						}
 					],
-					"remainingConversions": 7
+					"remainingConversions": 1
 				}
 			},
 			"IFileFormat": {
@@ -286,7 +287,7 @@
 	},
 	"info": {
 		"title": "unoconv-webservice",
-		"version": "0.1.0",
+		"version": "0.2.0",
 		"description": "REST api to convert files to different formats using unoconv",
 		"license": {
 			"name": "MIT"
@@ -312,12 +313,14 @@
 						}
 					}
 				},
+				"description": "Adds the file from the request body to the internal conversion queue.\nThe files in queue will be processed after the FIFO principle.",
 				"tags": [
 					"Conversion"
 				],
 				"security": [],
 				"parameters": [],
 				"requestBody": {
+					"description": "contains the file to convert",
 					"required": true,
 					"content": {
 						"application/json": {
@@ -342,6 +345,7 @@
 						}
 					}
 				},
+				"description": "Retrieves the status of the conversion queue and returns all conversions with\ntheir corresponding status and the amount of outstanding conversions.",
 				"tags": [
 					"Conversion"
 				],
@@ -364,12 +368,14 @@
 						}
 					}
 				},
+				"description": "Returns the current status for a conversion given a conversionId",
 				"tags": [
 					"Conversion"
 				],
 				"security": [],
 				"parameters": [
 					{
+						"description": "Unique identifier for the conversion of a file.",
 						"in": "path",
 						"name": "fileId",
 						"required": true,
@@ -395,6 +401,7 @@
 						}
 					}
 				},
+				"description": "Returns a list of all possible formats to convert from and to.",
 				"tags": [
 					"Conversion-Formats"
 				],
@@ -405,7 +412,7 @@
 	},
 	"servers": [
 		{
-			"url": "http://localhost:3000/"
+			"url": "http://svenpatrickmeier.de:3000/"
 		}
 	]
 }

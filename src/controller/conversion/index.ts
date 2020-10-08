@@ -16,11 +16,14 @@ import {
 	IConversionStatus
 } from "../../service/conversion/interface"
 import { Inject } from "typescript-ioc"
+import { Logger } from "../../service/logger"
 @Route("/conversion")
 @Tags("Conversion")
 export class ConversionController extends Controller {
 	@Inject
 	private readonly conversionService!: ConversionService
+	@Inject
+	private readonly logger!: Logger
 	/**
 	 * Adds the file from the request body to the internal conversion queue.
 	 * The files in queue will be processed after the FIFO principle.
@@ -30,6 +33,7 @@ export class ConversionController extends Controller {
 	public async convertFile(
 		@Body() conversionRequestBody: IConversionRequestBody
 	): Promise<IConversionProcessingResponse> {
+		this.logger.log("Conversion requested")
 		return await this.conversionService.processConversionRequest(conversionRequestBody)
 	}
 	/**
@@ -38,6 +42,7 @@ export class ConversionController extends Controller {
 	 */
 	@Get("/")
 	public getConversionQueueStatus(): IConversionQueueStatus {
+		this.logger.log("Conversion queue status requested")
 		return this.conversionService.getConversionQueueStatus()
 	}
 	/**
@@ -47,6 +52,7 @@ export class ConversionController extends Controller {
 	@Get("{fileId}")
 	public getConvertedFile(@Path() fileId: string): IConversionStatus {
 		try {
+			this.logger.log(`Conversion status requested for fileId`)
 			return this.conversionService.getConvertedFile(fileId)
 		}
 		catch (err) {
