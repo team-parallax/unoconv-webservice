@@ -1,4 +1,4 @@
-FROM teamparallax/unoconv-alpine
+FROM teamparallax/unoconv-alpine:v1.1.5
 
 ENV UNO_URL https://raw.githubusercontent.com/dagwieers/unoconv/master/unoconv
 
