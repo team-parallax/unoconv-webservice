@@ -45,14 +45,12 @@ build_docker_tagged:
       DOCKER_TLS_CERTDIR: ""
       REGISTRY: ${REGISTRY}
   script:
-    - apk add --repository="http://dl-cdn.alpinelinux.org/alpine/edge/community" nodejs-current=14.13.0-r0 nodejs-current-npm
     - echo -n "${DOCKER_PASSWORD}" | docker login -u ${DOCKER_USER} --password-stdin ${REGISTRY}
-    - docker build -t ${IMAGE}:`node -p -e "require('./package.json').version"` -f ./Dockerfile .
+    - docker build -t ${IMAGE}:${CI_COMMIT_TAG} -f ./Dockerfile .
     - docker push ${IMAGE}
     - docker logout
   only:
-    - master
-    - ci-build-from-master
+    - tags
 
 test_quality:
   image:
