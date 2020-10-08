@@ -30,6 +30,27 @@ test_unit:
   script:
     - yarn run test
 
+build_docker_tagged:
+  stage: build
+  services:
+      - docker:dind
+  image: docker:latest
+  variables:
+      IMAGE: teamparallax/unoconv-webservice
+      DOCKER_HOST: tcp://localhost:2375
+      DOCKER_PASSWORD: ${DOCKER_PASSWORD}
+      DOCKER_USER: ${DOCKER_USER}
+      DOCKER_TLS_CERTDIR: ""
+      REGISTRY: ${REGISTRY}
+  script:
+    - echo -n "${DOCKER_PASSWORD}" | docker login -u ${DOCKER_USER} --password-stdin ${REGISTRY}
+    - docker build -t ${IMAGE}:`node -p -e "require('./package.json').version"` -f ./Dockerfile .
+    - docker push ${IMAGE}
+    - docker logout
+  only:
+    - master
+    - ci-build-from-master
+
 test_quality:
   image:
     name: eu.gcr.io/parallax-gitlab/sonarqube:latest
