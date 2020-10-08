@@ -26,7 +26,7 @@
 		"start:docker:dev": "yarn build:docker && yarn start:docker",
 		"test": "jest --config ./jest.config.js --runInBand",
 		"test:single": "jest --config ./jest.config.js  ",
-		"tsoa:create:local": "yarn tsoa:create && gsed -i 's/https/http/g' swagger.json",
+		"tsoa:create:local": "yarn tsoa:create && sed -i 's/https/http/g' swagger.json",
 		"tsoa:create": "tsoa spec && tsoa routes"
 	},
 	"dependencies": {
