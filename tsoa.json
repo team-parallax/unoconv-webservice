@@ -7,7 +7,7 @@
     "spec": {
         "outputDirectory": "./",
 		"specVersion": 3,
-		"host": "svenpatrickmeier.de:3000"
+		"host": "localhost:3000"
     },
     "routes": {
 		"middleware": "express",

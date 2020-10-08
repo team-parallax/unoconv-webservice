@@ -287,7 +287,7 @@
 	},
 	"info": {
 		"title": "unoconv-webservice",
-		"version": "0.3.1",
+		"version": "0.3.3",
 		"description": "REST api to convert files to different formats using unoconv",
 		"license": {
 			"name": "MIT"
@@ -412,7 +412,7 @@
 	},
 	"servers": [
 		{
-			"url": "http://svenpatrickmeier.de:3000/"
+			"url": "http://localhost:3000/"
 		}
 	]
 }
