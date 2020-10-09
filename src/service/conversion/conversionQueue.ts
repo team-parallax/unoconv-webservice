@@ -9,8 +9,13 @@ import {
 	IConversionStatus
 } from "./interface"
 import { IConvertedFile } from "../unoconv/interface"
+import { Inject } from "typescript-ioc"
+import { Logger } from "../logger"
 import { NoSuchConversionIdError } from "../../constants"
 export class ConversionQueueService {
+	@Inject
+	private readonly logger!: Logger
+	// eslint-disable-next-line @typescript-eslint/member-ordering
 	private static instance: ConversionQueueService
 	private readonly convLog!: IConversionStatus[]
 	private readonly conversion!: IConversionRequest[]
@@ -80,9 +85,11 @@ export class ConversionQueueService {
 			return this.response(EConversionStatus.processing, conversionId)
 		}
 		if (isInConversionQueue) {
+			this.logger.log(`[Conversion Queue] creating in-queue response`)
 			return this.response(EConversionStatus.inQueue, conversionId)
 		}
 		if (isInConvertedQueue) {
+			this.logger.log(`[Conversion Queue] creating converted response`)
 			return this.response(EConversionStatus.converted, conversionId)
 		}
 		else {
@@ -111,6 +118,7 @@ export class ConversionQueueService {
 		else if (status === EConversionStatus.converted) {
 			const convertedFile = this.convertedQueue
 				.filter(item => item.conversionId === conversionId)[0]
+			this.logger.log(`${convertedFile}`)
 			const response: IConversionFinished = {
 				conversionId,
 				resultFile: convertedFile.resultFile,

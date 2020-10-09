@@ -5,7 +5,6 @@ import {
 	unlink,
 	writeFile
 } from "fs"
-type TArrayBufferView = NodeJS.ArrayBufferView
 export const deleteFile = async (path: string | undefined): Promise<void> => {
 	return await new Promise((resolve, reject) => {
 		if (!path) {
@@ -41,7 +40,7 @@ export const readFileToBuffer = async (path: string): Promise<Buffer> => {
 }
 export const writeToFile = async (
 	outputPath: string,
-	data: TArrayBufferView
+	data: Buffer
 ): Promise<string> => {
 	return new Promise((resolve, reject) => {
 		writeFile(outputPath, data, err => {

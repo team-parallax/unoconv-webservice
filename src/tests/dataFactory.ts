@@ -24,6 +24,7 @@ export const generateConversionRequestBodies = (
 	let dataSets = amount
 	while (dataSets > 0) {
 		result.push({
+			file: Buffer.from(`testfilename${amount - dataSets + 1}`),
 			filename: `testfilename${amount - dataSets + 1}`,
 			originalFormat,
 			targetFormat

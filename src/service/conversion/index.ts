@@ -52,11 +52,16 @@ export class ConversionService {
 					outputFilename: name,
 					targetFormat
 				})
-				await deleteFile(path)
+				// // Delete the input file
+				// this.logger.log(`[ConversionQueue] delete input file for ${conversionId}`)
+				// await deleteFile(path)
+				// this.logger.log(`[ConversionQueue] deleted input file`)
+				this.logger.log(`[ConversionQueue] add ${conversionId} to converted queue`)
 				this.conversionQueueService.addToConvertedQueue(
 					conversionId,
 					resp
 				)
+				this.logger.log(`[ConversionQueue] added to ${conversionId} to converted-queue`)
 				this.queueService.changeConvLogEntry(conversionId, EConversionStatus.converted)
 			}
 			catch (err) {

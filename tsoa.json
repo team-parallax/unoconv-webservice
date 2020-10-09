@@ -3,11 +3,29 @@
     "noImplicitAdditionalProperties": "throw-on-extras",
     "controllerPathGlobs": [
         "src/controller/**/*.ts"
-    ],
+	],
+	"specMerging": "recursive",
     "spec": {
         "outputDirectory": "./",
 		"specVersion": 3,
-		"host": "svenpatrickmeier.de:3000"
+		"host": "svenpatrickmeier.de:3000",
+		"paths": {
+			"/uploadtest": {
+			  "post": {
+				"consumes": [
+				  "multipart/form-data"
+				],
+				"parameters": [
+				  {
+					"in": "formData",
+					"name": "randomFileIsHere",
+					"required": true,
+					"type": "file"
+				  }
+				]
+			  }
+			}
+		  }
     },
     "routes": {
 		"middleware": "express",
