@@ -12,6 +12,7 @@ RUN mkdir -p \
 	input\
 	out\
 	&& npm install -g yarn \
-	&& yarn install
+	&& yarn install \
+	&& yarn tsoa:create:local
 
 CMD ["yarn", "start"]
