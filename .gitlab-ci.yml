@@ -17,44 +17,44 @@ stages:
   - deploy
   - post
 
-#before_script:
-#  - yarn install --cache .npm --prefer-offline
-#
-#install_dependencies:
-#  stage: prepare
-#  script:
-#    - yarn install
-#
-#test_lint:
+before_script:
+  - yarn install --cache .npm --prefer-offline
+
+install_dependencies:
+  stage: prepare
+  script:
+    - yarn install
+
+test_lint:
+  stage: test
+  script:
+    - yarn run lint
+
+#test_unit:
 #  stage: test
 #  script:
-#    - yarn run lint
-#
-##test_unit:
-##  stage: test
-##  script:
-##    - yarn run test
-#
-#build_docker_tagged:
-#  stage: build
-#  services:
-#      - docker:dind
-#  image: docker:latest
-#  before_script:
-#      - echo "Build docker image"
-#  variables:
-#      DOCKER_HOST: tcp://localhost:2375
-#      DOCKER_PASSWORD: ${DOCKER_PASSWORD}
-#      DOCKER_USER: ${DOCKER_USER}
-#      DOCKER_TLS_CERTDIR: ""
-#      REGISTRY: ${REGISTRY}
-#  script:
-#    - echo -n "${DOCKER_PASSWORD}" | docker login -u ${DOCKER_USER} --password-stdin ${REGISTRY}
-#    - docker build -t ${IMAGE_BASE_NAME}:${VERSION} -f ./Dockerfile .
-#    - docker push ${IMAGE_BASE_NAME}:${VERSION}
-#    - docker logout
-##  only:
-##    - tags
+#    - yarn run test
+
+build_docker_tagged:
+  stage: build
+  services:
+      - docker:dind
+  image: docker:latest
+  before_script:
+      - echo "Build docker image"
+  variables:
+      DOCKER_HOST: tcp://localhost:2375
+      DOCKER_PASSWORD: ${DOCKER_PASSWORD}
+      DOCKER_USER: ${DOCKER_USER}
+      DOCKER_TLS_CERTDIR: ""
+      REGISTRY: ${REGISTRY}
+  script:
+    - echo -n "${DOCKER_PASSWORD}" | docker login -u ${DOCKER_USER} --password-stdin ${REGISTRY}
+    - docker build -t ${IMAGE_BASE_NAME}:${VERSION} -f ./Dockerfile .
+    - docker push ${IMAGE_BASE_NAME}:${VERSION}
+    - docker logout
+#  only:
+#    - tags
 
 deploy:
   stage: deploy
@@ -63,7 +63,6 @@ deploy:
     - echo -n ${SERVICE_ACCOUNT} | base64 -d > /data/gcp-key-file.json
     - gcloud auth activate-service-account --key-file /data/gcp-key-file.json --project=${GKE_PROJECT}
     - gcloud container clusters get-credentials ${GKE_CLUSTER_NAME} --zone ${GKE_ZONE} --project ${GKE_PROJECT}
-#    - helm init
     - helm version
     - eval """
       helm upgrade --install
