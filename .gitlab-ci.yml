@@ -17,21 +17,8 @@ stages:
   - deploy
   - post
 
-.functions: &functions |
-  # Functions
-  function init_helm() {
-      mkdir -p /etc/deploy
-      echo -n ${SERVICE_ACCOUNT} | base64 -d > /etc/deploy/sa.json
-      gcloud auth activate-service-account --key-file /etc/deploy/sa.json --project=${GKE_PROJECT}
-      gcloud container clusters get-credentials ${GKE_CLUSTER_NAME} --zone ${GKE_ZONE} --project ${GKE_PROJECT}
-      helm init
-      helm version
-  }
-
-
 before_script:
   - yarn install --cache .npm --prefer-offline
-  - *functions
 
 install_dependencies:
   stage: prepare
@@ -69,7 +56,20 @@ build_docker_tagged:
 #  only:
 #    - tags
 
+.functions: &functions |
+  # Functions
+  function init_helm() {
+      mkdir -p /etc/deploy
+      echo -n ${SERVICE_ACCOUNT} | base64 -d > /etc/deploy/sa.json
+      gcloud auth activate-service-account --key-file /etc/deploy/sa.json --project=${GKE_PROJECT}
+      gcloud container clusters get-credentials ${GKE_CLUSTER_NAME} --zone ${GKE_ZONE} --project ${GKE_PROJECT}
+      helm init
+      helm version
+  }
+
 deploy:
+  before_script:
+    - *functions
   stage: deploy
   image: alpine/helm
   script:
