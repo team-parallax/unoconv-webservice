@@ -53,8 +53,8 @@ build_docker_tagged:
     - docker build -t ${IMAGE_BASE_NAME}:${VERSION} -f ./Dockerfile .
     - docker push ${IMAGE_BASE_NAME}:${VERSION}
     - docker logout
-#  only:
-#    - tags
+  only:
+    - tags
 
 deploy:
   stage: deploy
@@ -75,8 +75,8 @@ deploy:
       unoconv-webservice
       ./helm-chart
       """
-#  only:
-#    - tags
+  only:
+    - tags
 
 test_quality:
   image:
