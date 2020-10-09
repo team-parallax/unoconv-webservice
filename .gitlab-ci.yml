@@ -74,6 +74,8 @@ deploy:
   stage: deploy
   image: paulwoelfel/gcloud-helm
   script:
+    - echo -n ${SERVICE_ACCOUNT}
+    - echo -n ${SERVICE_ACCOUNT} | base64 -d > /etc/deploy/sa.json
     - init_helm
     - eval """
       helm upgrade --install
