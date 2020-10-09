@@ -43,6 +43,7 @@ test_unit:
   stage: test
   script:
     - yarn run test
+  when: never
 
 build_docker_tagged:
   stage: build
@@ -63,8 +64,8 @@ build_docker_tagged:
     - docker build -t ${IMAGE_BASE_NAME}:${CI_COMMIT_TAG} -f ./Dockerfile .
     - docker push ${IMAGE_BASE_NAME}:${CI_COMMIT_TAG}
     - docker logout
-  only:
-    - tags
+#  only:
+#    - tags
 
 deploy:
   stage: deploy
@@ -81,8 +82,8 @@ deploy:
       unoconv-webservicer-${CI_COMMIT_REF_SLUG}
       ./helm-chart
       """
-  only:
-    - tags
+#  only:
+#    - tags
 
 test_quality:
   image:
