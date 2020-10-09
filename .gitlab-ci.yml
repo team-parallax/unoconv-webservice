@@ -71,7 +71,7 @@ deploy:
   before_script:
     - *functions
   stage: deploy
-  image: alpine/helm
+  image: kiwigrid/gcloud-kubectl-helm
   script:
     - init_helm
     - eval """
