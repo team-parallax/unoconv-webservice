@@ -1,6 +1,10 @@
 default:
   image: teamparallax/unoconv-alpine:v1.1.4
 
+variables:
+#  VERSION: ${CI_COMMIT_TAG}
+  VERSION: dev
+
   cache:
     key: "$CI_COMMIT_REF_SLUG"
     paths:
@@ -58,10 +62,9 @@ build_docker_tagged:
       DOCKER_TLS_CERTDIR: ""
       REGISTRY: ${REGISTRY}
   script:
-    - echo "${CI_COMMIT_TAG}"
     - echo -n "${DOCKER_PASSWORD}" | docker login -u ${DOCKER_USER} --password-stdin ${REGISTRY}
-    - docker build -t ${IMAGE_BASE_NAME}:${CI_COMMIT_TAG} -f ./Dockerfile .
-    - docker push ${IMAGE_BASE_NAME}:${CI_COMMIT_TAG}
+    - docker build -t ${IMAGE_BASE_NAME}:${VERSION} -f ./Dockerfile .
+    - docker push ${IMAGE_BASE_NAME}:${VERSION}
     - docker logout
 #  only:
 #    - tags
@@ -75,7 +78,7 @@ deploy:
       helm upgrade --install
       -n "${NAMESPACE}"
       --set web.name="unoconv-webservicer-${CI_COMMIT_REF_SLUG}"
-      --set web.image="${IMAGE_BASE_NAME}:${CI_COMMIT_TAG}"
+      --set web.image="${IMAGE_BASE_NAME}:${VERSION}"
       --set web.host="${URL_PRODUCTION}"
       --wait
       unoconv-webservicer-${CI_COMMIT_REF_SLUG}
