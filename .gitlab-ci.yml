@@ -5,10 +5,10 @@ variables:
 #  VERSION: ${CI_COMMIT_TAG}
   VERSION: dev
 
-  cache:
-    key: "$CI_COMMIT_REF_SLUG"
-    paths:
-      - .npm/
+cache:
+  key: "$CI_COMMIT_REF_SLUG"
+  paths:
+    - .npm/
 
 stages:
   - prepare
