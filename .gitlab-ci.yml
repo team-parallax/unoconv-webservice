@@ -10,10 +10,24 @@ stages:
   - prepare
   - test
   - build
+  - deploy
   - post
+
+.functions: &functions |
+  # Functions
+  function init_helm() {
+      mkdir -p /etc/deploy
+      echo -n ${SERVICE_ACCOUNT} | base64 -d > /etc/deploy/sa.json
+      gcloud auth activate-service-account --key-file /etc/deploy/sa.json --project=${GKE_PROJECT}
+      gcloud container clusters get-credentials ${GKE_CLUSTER_NAME} --zone ${GKE_ZONE} --project ${GKE_PROJECT}
+      helm init
+      helm version
+  }
+
 
 before_script:
   - yarn install --cache .npm --prefer-offline
+  - *functions
 
 install_dependencies:
   stage: prepare
@@ -38,7 +52,6 @@ build_docker_tagged:
   before_script:
       - echo "Build docker image"
   variables:
-      IMAGE: ${IMAGE_BASE_NAME}
       DOCKER_HOST: tcp://localhost:2375
       DOCKER_PASSWORD: ${DOCKER_PASSWORD}
       DOCKER_USER: ${DOCKER_USER}
@@ -47,9 +60,27 @@ build_docker_tagged:
   script:
     - echo "${CI_COMMIT_TAG}"
     - echo -n "${DOCKER_PASSWORD}" | docker login -u ${DOCKER_USER} --password-stdin ${REGISTRY}
-    - docker build -t ${IMAGE}:${CI_COMMIT_TAG} -f ./Dockerfile .
-    - docker push ${IMAGE}:${CI_COMMIT_TAG}
+    - docker build -t ${IMAGE_BASE_NAME}:${CI_COMMIT_TAG} -f ./Dockerfile .
+    - docker push ${IMAGE_BASE_NAME}:${CI_COMMIT_TAG}
     - docker logout
+  only:
+    - tags
+
+deploy:
+  stage: deploy
+  image: alpine/helm
+  script:
+    - init_helm
+    - eval """
+      helm upgrade --install
+      -n "${NAMESPACE}"
+      --set web.name="unoconv-webservicer-${CI_COMMIT_REF_SLUG}"
+      --set web.image="${IMAGE_BASE_NAME}:${CI_COMMIT_TAG}"
+      --set web.host="${URL_PRODUCTION}"
+      --wait
+      unoconv-webservicer-${CI_COMMIT_REF_SLUG}
+      ./helm-chart
+      """
   only:
     - tags
 
