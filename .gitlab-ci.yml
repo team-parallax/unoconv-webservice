@@ -58,7 +58,7 @@ stages:
 
 deploy:
   stage: deploy
-  image: paulwoelfel/gcloud-helm
+  image: gcloud-kubectl-helm
   script:
     - mkdir -p /etc/deploy
     - echo -n ${SERVICE_ACCOUNT} | base64 -d > /etc/deploy/sa.json
