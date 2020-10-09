@@ -13,7 +13,6 @@ import {
 import { writeToFile } from "../file-io"
 import unoconv from "unoconv2"
 type TErrnoException = NodeJS.ErrnoException
-type TArrayBufferView = NodeJS.ArrayBufferView
 export class UnoconvService {
 	public static async convertToTarget(
 		{
@@ -44,7 +43,7 @@ export class UnoconvService {
 					targetFormat,
 					async (
 						err: TErrnoException,
-						res: TArrayBufferView
+						res: Buffer
 					) => {
 						if (err) {
 							reject(err)
@@ -55,7 +54,7 @@ export class UnoconvService {
 							const result: IConvertedFile = {
 								outputFilename: `${filename}.${targetFormat}`,
 								path,
-								resultFile: Buffer.from(res.toString())
+								resultFile: res
 							}
 							resolve(result)
 						}

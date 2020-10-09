@@ -30,6 +30,7 @@ describe("ConversionService should pass all tests", () => {
 			firstResponse,
 			...convProcessingResps
 		] = responses
+		console.log(responses)
 		const latestQueueLength = getQueueLength()
 		const {
 			conversionId: firstConversionId
