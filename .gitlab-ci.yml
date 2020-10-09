@@ -2,8 +2,8 @@ default:
   image: teamparallax/unoconv-alpine:v1.1.4
 
 variables:
-#  VERSION: ${CI_COMMIT_TAG}
-  VERSION: dev
+  VERSION: ${CI_COMMIT_TAG}
+#  VERSION: dev
 
 cache:
   key: "$CI_COMMIT_REF_SLUG"
