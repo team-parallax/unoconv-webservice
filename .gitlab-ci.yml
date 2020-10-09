@@ -68,11 +68,11 @@ deploy:
     - eval """
       helm upgrade --install
       -n "${NAMESPACE}"
-      --set web.name="unoconv-webservicer-${CI_COMMIT_REF_SLUG}"
+      --set web.name="unoconv-webservice"
       --set web.image="${IMAGE_BASE_NAME}:${VERSION}"
       --set web.host="${URL_PRODUCTION}"
       --wait
-      unoconv-webservicer-${CI_COMMIT_REF_SLUG}
+      unoconv-webservice
       ./helm-chart
       """
 #  only:
