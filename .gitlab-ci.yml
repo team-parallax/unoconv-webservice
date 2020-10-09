@@ -39,11 +39,10 @@ test_lint:
   script:
     - yarn run lint
 
-test_unit:
-  stage: test
-  script:
-    - yarn run test
-  when: never
+#test_unit:
+#  stage: test
+#  script:
+#    - yarn run test
 
 build_docker_tagged:
   stage: build
