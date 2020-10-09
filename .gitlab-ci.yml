@@ -58,6 +58,7 @@ build_docker_tagged:
 
 deploy:
   stage: deploy
+  before_script: []
   image: kiwigrid/gcloud-kubectl-helm:3.3.4-312.0.0-267
   script:
     - echo -n ${SERVICE_ACCOUNT} | base64 -d > /data/gcp-key-file.json
