@@ -1,34 +1,33 @@
 {
-    "entryFile": "src/app.ts",
-    "noImplicitAdditionalProperties": "throw-on-extras",
-    "controllerPathGlobs": [
-        "src/controller/**/*.ts"
+	"entryFile": "src/app.ts",
+	"noImplicitAdditionalProperties": "throw-on-extras",
+	"controllerPathGlobs": [
+		"src/controller/**/*.ts"
 	],
 	"specMerging": "recursive",
-    "spec": {
-        "outputDirectory": "./",
+	"spec": {
+		"outputDirectory": "./",
 		"specVersion": 3,
-		"host": "svenpatrickmeier.de:3000",
 		"paths": {
 			"/uploadtest": {
-			  "post": {
-				"consumes": [
-				  "multipart/form-data"
-				],
-				"parameters": [
-				  {
-					"in": "formData",
-					"name": "randomFileIsHere",
-					"required": true,
-					"type": "file"
-				  }
-				]
-			  }
+				"post": {
+					"consumes": [
+						"multipart/form-data"
+					],
+					"parameters": [
+						{
+							"in": "formData",
+							"name": "randomFileIsHere",
+							"required": true,
+							"type": "file"
+						}
+					]
+				}
 			}
-		  }
-    },
-    "routes": {
+		}
+	},
+	"routes": {
 		"middleware": "express",
-        "routesDir": "src/routes"
-    }
+		"routesDir": "src/routes"
+	}
 }

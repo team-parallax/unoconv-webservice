@@ -50,7 +50,7 @@ build_docker_tagged:
       REGISTRY: ${REGISTRY}
   script:
     - echo -n "${DOCKER_PASSWORD}" | docker login -u ${DOCKER_USER} --password-stdin ${REGISTRY}
-    - docker build -t ${IMAGE_BASE_NAME}:${VERSION} -f ./Dockerfile .
+    - docker build --build-arg host=${URL_PRODUCTION} -t ${IMAGE_BASE_NAME}:${VERSION} -f ./Dockerfile .
     - docker push ${IMAGE_BASE_NAME}:${VERSION}
     - docker logout
   only:

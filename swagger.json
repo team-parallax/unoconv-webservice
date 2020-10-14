@@ -287,7 +287,7 @@
 	},
 	"info": {
 		"title": "unoconv-webservice",
-		"version": "0.3.6",
+		"version": "0.4.1",
 		"description": "REST api to convert files to different formats using unoconv",
 		"license": {
 			"name": "MIT"
