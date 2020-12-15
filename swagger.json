@@ -287,7 +287,7 @@
 	},
 	"info": {
 		"title": "unoconv-webservice",
-		"version": "0.4.1",
+		"version": "0.4.2",
 		"description": "REST api to convert files to different formats using unoconv",
 		"license": {
 			"name": "MIT"
@@ -386,6 +386,51 @@
 				]
 			}
 		},
+		"/ping": {
+			"get": {
+				"operationId": "GetPingResponse",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "string"
+								},
+								"examples": {
+									"Example 1": {
+										"value": {
+											"message": "pong"
+										}
+									},
+									"Example 2": {
+										"value": {
+											"message": "ping"
+										}
+									},
+									"Example 3": {
+										"value": {
+											"message": "pung"
+										}
+									},
+									"Example 4": {
+										"value": {
+											"message": "pang"
+										}
+									}
+								}
+							}
+						}
+					}
+				},
+				"description": "Returns 'pong' on request.\nThis can be used to check if the webservice is up\nbefore trying to fetch data.",
+				"tags": [
+					"Misc."
+				],
+				"security": [],
+				"parameters": []
+			}
+		},
 		"/formats": {
 			"get": {
 				"operationId": "GetSupportedFormats",
@@ -408,31 +453,11 @@
 				"security": [],
 				"parameters": []
 			}
-		},
-		"/uploadtest": {
-			"post": {
-				"operationId": "UploadFile",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {}
-							}
-						}
-					}
-				},
-				"tags": [
-					"Conversion-Formats"
-				],
-				"security": [],
-				"parameters": []
-			}
 		}
 	},
 	"servers": [
 		{
-			"url": "http://localhost:3000/"
+			"url": "/"
 		}
 	]
 }

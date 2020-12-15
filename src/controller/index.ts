@@ -1,43 +1,54 @@
 import {
 	Controller,
+	Example,
 	Get,
-	Post,
-	Request,
 	Route,
 	Tags
 } from "tsoa"
+import { EHttpResponseCodes } from "../constants"
 import { IFormatList } from "../service/unoconv/interface"
 import { Inject } from "typescript-ioc"
 import { Logger } from "../service/logger"
 import { UnoconvService } from "../service/unoconv"
-import express from "express"
-import multer from "multer"
+interface ITest {
+	message: string
+}
+const testVar: ITest = {
+	message: "pang"
+}
 @Route("/")
-@Tags("Conversion-Formats")
 export class IndexController extends Controller {
 	@Inject
 	private readonly logger!: Logger
 	/**
+	 * Returns 'pong' on request.
+	 * This can be used to check if the webservice is up
+	 * before trying to fetch data.
+	 */
+	@Tags("Misc.")
+	@Get("/ping")
+	@Example<ITest>({
+		message: "pong"
+	})
+	@Example<ITest>({
+		message: "ping"
+	})
+	@Example<ITest>({
+		message: "pung"
+	})
+	@Example<ITest>(testVar)
+	public getPingResponse(): string {
+		this.logger.log("Received 'ping' signal.")
+		this.setStatus(EHttpResponseCodes.ok)
+		return "pong"
+	}
+	/**
 	 * Returns a list of all possible formats to convert from and to.
 	 */
+	@Tags("Conversion-Formats")
 	@Get("/formats")
 	public async getSupportedFormats(): Promise<IFormatList> {
 		this.logger.log("Available formats requested")
 		return await UnoconvService.showAvailableFormats()
-	}
-	@Post("/uploadtest")
-	public async uploadFile(@Request() request: express.Request): Promise<unknown> {
-		return await this.handleFile(request)
-	}
-	private async handleFile(request: express.Request): Promise<unknown> {
-		const multerSingle = multer().single("randomFileIsHere")
-		return new Promise((resolve, reject) => {
-			multerSingle(request, express.response, (error: unknown) => {
-				if (error) {
-					reject(error)
-				}
-				resolve()
-			})
-		})
 	}
 }
