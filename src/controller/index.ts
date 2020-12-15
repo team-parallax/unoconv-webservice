@@ -10,12 +10,6 @@ import { IFormatList } from "../service/unoconv/interface"
 import { Inject } from "typescript-ioc"
 import { Logger } from "../service/logger"
 import { UnoconvService } from "../service/unoconv"
-interface ITest {
-	message: string
-}
-const testVar: ITest = {
-	message: "pang"
-}
 @Route("/")
 export class IndexController extends Controller {
 	@Inject
@@ -27,16 +21,7 @@ export class IndexController extends Controller {
 	 */
 	@Tags("Misc.")
 	@Get("/ping")
-	@Example<ITest>({
-		message: "pong"
-	})
-	@Example<ITest>({
-		message: "ping"
-	})
-	@Example<ITest>({
-		message: "pung"
-	})
-	@Example<ITest>(testVar)
+	@Example<string>("pong")
 	public getPingResponse(): string {
 		this.logger.log("Received 'ping' signal.")
 		this.setStatus(EHttpResponseCodes.ok)
