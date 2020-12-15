@@ -9,8 +9,6 @@ build
 # IDE files
 .idea/
 .vscode
-# sonarcube scan results
-.scannerwork
 # log files
 yarn-error.log
 yarn-debug.log
