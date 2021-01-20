@@ -1,5 +1,5 @@
 default:
-  image: teamparallax/unoconv-alpine:v1.1.4
+  image: teamparallax/unoconv-alpine:v1.2.0
 
 variables:
   VERSION: ${CI_COMMIT_TAG}

@@ -1,4 +1,4 @@
-FROM teamparallax/unoconv-alpine:v1.1.5
+FROM teamparallax/unoconv-alpine:v1.2.0
 
 ARG host=http://localhost:3000/
 ENV HOST=$host
