@@ -1,9 +1,7 @@
-FROM teamparallax/unoconv-alpine:v1.2.0
+FROM teamparallax/unoconv-alpine:1.2.0
 
-ARG host=http://localhost:3000/
+ARG host=localhost:3000
 ENV HOST=$host
-
-ENV UNO_URL https://raw.githubusercontent.com/dagwieers/unoconv/master/unoconv
 
 WORKDIR /app
 
@@ -18,8 +16,7 @@ RUN mkdir -p \
 	test/out \
 	input\
 	out\
-	&& npm install -g yarn \
 	&& yarn install \
 	&& yarn tsoa:create:docker
 
-CMD ["yarn", "start"]
+CMD ["yarn", "start:dev"]

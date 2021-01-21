@@ -1,8 +1,8 @@
 export class Logger {
-	error = (content: string): void => {
-		console.error(content)
+	error = (content: unknown): void => {
+		console.error(JSON.stringify(content, null, 2))
 	}
-	log = (content: string): void => {
-		console.log(content)
+	log = (content: unknown): void => {
+		console.log(JSON.stringify(content, null, 2))
 	}
 }

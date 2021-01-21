@@ -27,6 +27,7 @@ export class ConversionService {
 		const {
 			conversionId
 		} = this.queueService.addToConversionQueue(requestObject)
+		this.logger.log(`Add ${conversionId} to conversion queue.`)
 		// eslint-disable-next-line no-void
 		void this.update()
 		return {
@@ -42,10 +43,13 @@ export class ConversionService {
 				path,
 				targetFormat
 			} = fileToProcess
+			this.logger.log(`Starting conversion process for conversionId: ${conversionId}`)
 			this.queueService.isCurrentlyConverting = true
 			this.queueService.currentlyConvertingFile = fileToProcess
 			this.queueService.changeConvLogEntry(conversionId, EConversionStatus.processing)
 			try {
+				this.logger.log(`Starting unoconv conversion for ${conversionId}`)
+				this.logger.log(`Converting ${path} --> ${name}.${targetFormat}`)
 				const resp = await UnoconvService.convertToTarget({
 					conversionId,
 					filePath: path,
@@ -53,8 +57,8 @@ export class ConversionService {
 					targetFormat
 				})
 				// // Delete the input file
-				// this.logger.log(`[ConversionQueue] delete input file for ${conversionId}`)
-				// await deleteFile(path)
+				this.logger.log(`[ConversionQueue] delete input file for ${conversionId}`)
+				await deleteFile(path)
 				// this.logger.log(`[ConversionQueue] deleted input file`)
 				this.logger.log(`[ConversionQueue] add ${conversionId} to converted queue`)
 				this.conversionQueueService.addToConvertedQueue(
@@ -65,7 +69,8 @@ export class ConversionService {
 				this.queueService.changeConvLogEntry(conversionId, EConversionStatus.converted)
 			}
 			catch (err) {
-				this.logger.error(err)
+				this.logger.error(`[CRITICAL] An unkown error occured during the conversion of ${path}(${conversionId})`)
+				this.logger.error(`Output from unoconv:\n${err}`)
 			}
 			finally {
 				this.isCurrentlyConverting = false
@@ -95,6 +100,7 @@ export class ConversionService {
 		}
 	}
 	public getConvertedFile(fileId: string): IConversionStatus {
+		this.logger.log(`Get conversion status of ${fileId}`)
 		return this.queueService.getStatusById(fileId)
 	}
 	public async processConversionRequest({
