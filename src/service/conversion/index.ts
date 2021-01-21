@@ -56,10 +56,10 @@ export class ConversionService {
 					outputFilename: name,
 					targetFormat
 				})
-				// // Delete the input file
+				// Delete the input file
 				this.logger.log(`[ConversionQueue] delete input file for ${conversionId}`)
 				await deleteFile(path)
-				// this.logger.log(`[ConversionQueue] deleted input file`)
+				this.logger.log(`[ConversionQueue] deleted input file`)
 				this.logger.log(`[ConversionQueue] add ${conversionId} to converted queue`)
 				this.conversionQueueService.addToConvertedQueue(
 					conversionId,
@@ -69,8 +69,13 @@ export class ConversionService {
 				this.queueService.changeConvLogEntry(conversionId, EConversionStatus.converted)
 			}
 			catch (err) {
-				this.logger.error(`[CRITICAL] An unkown error occured during the conversion of ${path}(${conversionId})`)
-				this.logger.error(`Output from unoconv:\n${err}`)
+				this.logger.error(`[CRITICAL] An unkown error occured during the conversion of ${path} (${conversionId}). Output from unoconv:`)
+				this.logger.error(err)
+				this.queueService.changeConvLogEntry(
+					conversionId,
+					EConversionStatus.erroneus
+				)
+				await deleteFile(path);
 			}
 			finally {
 				this.isCurrentlyConverting = false

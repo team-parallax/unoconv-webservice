@@ -62,7 +62,7 @@ export class ConversionController extends Controller {
 		}
 		catch (err) {
 			this.logger.error(
-				`[CRITICAL] Given conversionId (${fileId}) could not be found.\n${err.message}`
+				`[CRITICAL] Given conversionId (${fileId}) could not be found. Error message: ${err.message}`
 			)
 			this.setStatus(EHttpResponseCodes.notFound)
 			return {
