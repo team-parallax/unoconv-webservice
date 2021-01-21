@@ -33,7 +33,7 @@ export class IndexController extends Controller {
 	@Tags("Conversion-Formats")
 	@Get("/formats")
 	public async getSupportedFormats(): Promise<IFormatList> {
-		this.logger.log("Available formats requested")
+		this.logger.log("Available formats for document conversions requested")
 		return await UnoconvService.showAvailableFormats()
 	}
 }

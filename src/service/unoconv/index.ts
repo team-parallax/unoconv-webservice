@@ -12,8 +12,10 @@ import {
 } from "./interface"
 import { writeToFile } from "../file-io"
 import unoconv from "unoconv2"
+import { Logger } from "../logger"
 type TErrnoException = NodeJS.ErrnoException
 export class UnoconvService {
+	private static logger: Logger = new Logger()
 	public static async convertToTarget(
 		{
 			conversionId,
@@ -46,20 +48,26 @@ export class UnoconvService {
 						res: Buffer
 					) => {
 						if (err) {
+							this.logger.error(`[CRITICAL] Error during conversion for ${filePath} --> ${targetFormat}`)
 							reject(err)
 						}
-						try {
-							const path = `./out/${conversionId}.${targetFormat}`
-							await writeToFile(path, res)
-							const result: IConvertedFile = {
-								outputFilename: `${filename}.${targetFormat}`,
-								path,
-								resultFile: res
+						else {
+							try {
+								const path = `./out/${conversionId}.${targetFormat}`
+								this.logger.log(`Successfully converted file. Saving to disk`)
+								await writeToFile(path, res)
+								const result: IConvertedFile = {
+									outputFilename: `${filename}.${targetFormat}`,
+									path,
+									resultFile: res
+								}
+								resolve(result)
 							}
-							resolve(result)
-						}
-						catch (err) {
-							reject(err)
+							catch (err) {
+								this.logger.error(`[CRITICAL] An unknown error occured:`)
+								this.logger.error(err)
+								reject(err)
+							}
 						}
 					}
 				)

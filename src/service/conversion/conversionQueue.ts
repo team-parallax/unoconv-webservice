@@ -75,12 +75,19 @@ export class ConversionQueueService {
 		return this.conversionQueue.shift()
 	}
 	public getStatusById(conversionId: string): IConversionStatus {
+		const erroneusDocument = this.convLog.find(
+			item => item.conversionId === conversionId
+		)
 		const isInConversionQueue: boolean = this.conversionQueue.filter(
 			(item: IConversionRequest) => item.conversionId === conversionId
 		).length > 0
 		const isInConvertedQueue: boolean = this.convertedQueue.filter(
 			(item: IConversionResult) => item.conversionId === conversionId
 		).length > 0
+		if (erroneusDocument) {
+			this.logger.log("Got erroneus document, removing")
+			return this.response(EConversionStatus.erroneus, conversionId)
+		}
 		if (this.currentlyConvertingFile?.conversionId === conversionId) {
 			return this.response(EConversionStatus.processing, conversionId)
 		}
@@ -118,13 +125,20 @@ export class ConversionQueueService {
 		else if (status === EConversionStatus.converted) {
 			const convertedFile = this.convertedQueue
 				.filter(item => item.conversionId === conversionId)[0]
-			this.logger.log(`${convertedFile}`)
+			this.logger.log(convertedFile)
 			const response: IConversionFinished = {
 				conversionId,
 				resultFile: convertedFile.resultFile,
 				status
 			}
 			return response
+		}
+		else if (status === EConversionStatus.erroneus) {
+			this.logger.log("Send ERROR feedback to client")
+			return {
+				conversionId,
+				status
+			}
 		}
 		const response: IConversionInProgress = {
 			conversionId,
