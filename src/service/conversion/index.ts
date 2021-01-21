@@ -75,7 +75,7 @@ export class ConversionService {
 					conversionId,
 					EConversionStatus.erroneus
 				)
-				await deleteFile(path);
+				await deleteFile(path)
 			}
 			finally {
 				this.isCurrentlyConverting = false
