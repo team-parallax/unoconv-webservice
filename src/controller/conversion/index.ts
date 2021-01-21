@@ -33,7 +33,12 @@ export class ConversionController extends Controller {
 	public async convertFile(
 		@Body() conversionRequestBody: IConversionRequestBody
 	): Promise<IConversionProcessingResponse> {
-		this.logger.log("Conversion requested")
+		const {
+			filename,
+			originalFormat,
+			targetFormat
+		} = conversionRequestBody
+		this.logger.log(`Conversion requested for:\n${filename}.${originalFormat} --> ${targetFormat}`)
 		return await this.conversionService.processConversionRequest(conversionRequestBody)
 	}
 	/**
@@ -52,10 +57,13 @@ export class ConversionController extends Controller {
 	@Get("{fileId}")
 	public getConvertedFile(@Path() fileId: string): IConversionStatus {
 		try {
-			this.logger.log(`Conversion status requested for fileId`)
+			this.logger.log(`Conversion status requested for conversionId: ${fileId}`)
 			return this.conversionService.getConvertedFile(fileId)
 		}
 		catch (err) {
+			this.logger.error(
+				`[CRITICAL] Given conversionId (${fileId}) could not be found. Error message: ${err.message}`
+			)
 			this.setStatus(EHttpResponseCodes.notFound)
 			return {
 				conversionId: fileId,
