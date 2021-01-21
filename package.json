@@ -18,7 +18,8 @@
 	},
 	"scripts": {
 		"build:docker": "docker build -t teamparallax/unoconv-webservice -f ./Dockerfile .",
-		"lint": "eslint src --ext .ts --fix",
+		"lint": "eslint src --ext .ts",
+		"lint:fix": "eslint src --ext .ts --fix",
 		"start": "ts-node src/app.ts",
 		"start:dev": "yarn tsoa:create:local && yarn start",
 		"start:docker": "docker run --name unoconv -v $(pwd)/out:/app/out -p 3000:3000 teamparallax/unoconv-webservice",

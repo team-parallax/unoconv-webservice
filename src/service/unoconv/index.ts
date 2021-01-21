@@ -10,12 +10,12 @@ import {
 	IConvertedFile,
 	IFormatList
 } from "./interface"
+import { Logger } from "../logger"
 import { writeToFile } from "../file-io"
 import unoconv from "unoconv2"
-import { Logger } from "../logger"
 type TErrnoException = NodeJS.ErrnoException
 export class UnoconvService {
-	private static logger: Logger = new Logger()
+	private static readonly logger: Logger = new Logger()
 	public static async convertToTarget(
 		{
 			conversionId,
