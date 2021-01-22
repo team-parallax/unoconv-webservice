@@ -38,8 +38,13 @@ export class ConversionController extends Controller {
 			originalFormat,
 			targetFormat
 		} = conversionRequestBody
-		this.logger.log(`Conversion requested for:\n${filename}.${originalFormat} --> ${targetFormat}`)
-		return await this.conversionService.processConversionRequest(conversionRequestBody)
+		// Removes extension from filename if there is one
+		const rawFilename = filename.replace(/(\.([^. \n]+))/g, "")
+		this.logger.log(`Conversion requested for:\n${rawFilename}.${originalFormat} --> ${targetFormat}`)
+		return await this.conversionService.processConversionRequest({
+			...conversionRequestBody,
+			filename: rawFilename
+		})
 	}
 	/**
 	 * Retrieves the status of the conversion queue and returns all conversions with

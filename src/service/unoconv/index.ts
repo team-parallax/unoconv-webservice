@@ -65,7 +65,7 @@ export class UnoconvService {
 							}
 							catch (err) {
 								this.logger.error(`[CRITICAL] An unknown error occured:`)
-								this.logger.error(err)
+								this.logger.error(err.message)
 								reject(err)
 							}
 						}
