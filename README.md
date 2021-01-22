@@ -50,7 +50,7 @@ To see the API-documentation in development-environment one can go to `http://lo
 
 ### Unowebconv moodle plugin
 
-The current version of the webservice (`0.5.4`) works with moodle unowebconv plugin version `1.0.2`.
+The current version of the webservice (`0.5.5`) works with moodle unowebconv plugin version `1.0.2`.
 See this section for further releases.
 
 #### Minimum version requirements
@@ -61,5 +61,4 @@ See this section for further releases.
 | `0.5.0` | `1.0.2` and previous |
 | `0.5.3` | `1.0.2` and previous |
 | `0.5.4` | `1.0.2` and previous |
-
-
+| `0.5.5` | `1.0.2` and previous |
