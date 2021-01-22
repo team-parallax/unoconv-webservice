@@ -76,7 +76,7 @@ export class ConversionQueueService {
 	}
 	public getStatusById(conversionId: string): IConversionStatus {
 		const erroneusDocument = this.convLog.find(
-			item => item.conversionId === conversionId
+			item => item.conversionId === conversionId && item.status === EConversionStatus.erroneus
 		)
 		const isInConversionQueue: boolean = this.conversionQueue.filter(
 			(item: IConversionRequest) => item.conversionId === conversionId

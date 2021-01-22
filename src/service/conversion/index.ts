@@ -70,7 +70,7 @@ export class ConversionService {
 			}
 			catch (err) {
 				this.logger.error(`[CRITICAL] An unkown error occured during the conversion of ${path} (${conversionId}). Output from unoconv:`)
-				this.logger.error(err)
+				this.logger.error(err.message)
 				this.queueService.changeConvLogEntry(
 					conversionId,
 					EConversionStatus.erroneus
