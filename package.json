@@ -1,6 +1,6 @@
 {
 	"name": "unoconv-webservice",
-	"version": "0.5.4",
+	"version": "0.5.5",
 	"description": "REST api to convert files to different formats using unoconv",
 	"license": "MIT",
 	"author": "Sven Patrick Meier",
