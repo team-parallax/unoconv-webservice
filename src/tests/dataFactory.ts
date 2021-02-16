@@ -6,7 +6,6 @@ export const generateConversionRequests = (amount: number = 1): IConversionReque
 	while (dataSets > 0) {
 		result.push({
 			conversionId: uuid(),
-			isConverted: false,
 			name: `name${dataSets}`,
 			path: `some/path/to/${dataSets}`,
 			targetFormat: "pdf"
@@ -32,4 +31,7 @@ export const generateConversionRequestBodies = (
 		dataSets--
 	}
 	return result
+}
+export const generateRandomNumberInInterval = (maxVal: number, minVal: number = 0): number => {
+	return Math.floor(Math.random() * (maxVal - minVal + 1) + minVal)
 }

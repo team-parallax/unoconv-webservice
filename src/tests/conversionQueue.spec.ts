@@ -1,62 +1,77 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import { ConversionQueueService } from "../service/conversion/conversionQueue"
-import { IConversionRequest, IConversionStatusResponse } from "../service/conversion/interface"
-import { generateConversionRequests } from "./dataFactory"
+import { EConversionStatus } from "../service/conversion/enum"
+import {
+	IConversionFinished,
+	IConversionInProgress,
+	IConversionInQueue,
+	IConversionRequest,
+	IConversionStatus,
+	IConversionStatusResponse
+} from "../service/conversion/interface"
+import { NoSuchConversionIdError } from "~/constants"
+import {
+	generateConversionRequests,
+	generateRandomNumberInInterval
+} from "./dataFactory"
 import { v4 as uuid } from "uuid"
 describe("ConversionQueueService should pass all tests", () => {
+	const conversionQueueService = new ConversionQueueService()
+	beforeEach(() => {
+		conversionQueueService.conversionLog = new Map()
+		conversionQueueService.conversionQueue = []
+		conversionQueueService.convertedQueue = []
+	})
 	describe("It should return the next element from queue or undefined if queue is empty", () => {
-		it("It should create a ConversionQueueService instance with two empty queues", () => {
+		it("should create a ConversionQueueService instance with two empty queues", () => {
 			/* Arrange */
-			const queueService = new ConversionQueueService()
-			const conversionQueue = queueService.conversionQueue
-			const convertedQueue = queueService.convertedQueue
-			expect(conversionQueue).toMatchObject([])
-			expect(conversionQueue).toHaveLength(0)
-			expect(convertedQueue).toMatchObject([])
-			expect(convertedQueue).toHaveLength(0)
+			expect(conversionQueueService.conversionQueue).toMatchObject([])
+			expect(conversionQueueService.conversionQueue).toHaveLength(0)
+			expect(conversionQueueService.convertedQueue).toMatchObject([])
+			expect(conversionQueueService.convertedQueue).toHaveLength(0)
 		})
-		it("It should return undefined because of empty IConversionRequest queue", () => {
+		it("should return undefined because of empty IConversionRequest queue", () => {
 			/* Arrange */
-			const queueService = new ConversionQueueService()
 			/* Act */
-			const nextElement: IConversionRequest | undefined = queueService.getNextQueueElement()
+			// eslint-disable-next-line max-len
+			const nextElement: IConversionRequest | undefined = conversionQueueService.getNextQueueElement()
 			/* Assert */
-			expect(queueService).toBeDefined()
+			expect(conversionQueueService).toBeDefined()
 			expect(nextElement).toBeUndefined()
 		})
-		it("It should return an IConversionRequest object from queue", () => {
+		it("should return an IConversionRequest object from queue", () => {
 			/* Arrange */
-			const queueService = new ConversionQueueService()
+			const conversionQueue = new ConversionQueueService()
 			const request: IConversionRequest = generateConversionRequests()[0]
 			/* Act */
-			queueService.addToConversionQueue(request)
-			const nextElement: IConversionRequest | undefined = queueService.getNextQueueElement()
+			conversionQueue.addToConversionQueue(request)
+			// eslint-disable-next-line max-len
+			const nextElement: IConversionRequest | undefined = conversionQueue.getNextQueueElement()
 			/* Assert */
-			expect(queueService).toBeDefined()
+			expect(conversionQueue).toBeDefined()
 			expect(nextElement).toMatchObject(request)
 		})
 	})
-	it("It should create a ConversionQueueService and add items to empty conversion queue", () => {
+	it("should create a ConversionQueueService and add items to empty conversion queue", () => {
 		/* Arrange */
 		const CUuidString = /^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i
-		const queueService = new ConversionQueueService()
 		const conversionQueueLength = (): number => {
-			return queueService.conversionQueue.length
+			return conversionQueueService.conversionQueue.length
 		}
 		const initialConversionQueueLength = conversionQueueLength()
 		const request: IConversionRequest = generateConversionRequests()[0]
 		/* Act */
 		const {
 			conversionId: firstConversionQueueResponse
-		} = queueService.addToConversionQueue(request)
+		} = conversionQueueService.addToConversionQueue(request)
 		const delayedConversionQueueLength = conversionQueueLength()
 		const {
 			conversionId: secondConversionQueueResponse
-		} = queueService.addToConversionQueue(request)
+		} = conversionQueueService.addToConversionQueue(request)
 		const secondDelayedConversionQueueLength = conversionQueueLength()
 		const {
 			conversionId: thirdConversionQueueResponse
-		} = queueService.addToConversionQueue(request)
+		} = conversionQueueService.addToConversionQueue(request)
 		const thirdDelayedConversionQueueLength = conversionQueueLength()
 		/* Assert */
 		// Queue length assertions
@@ -69,81 +84,139 @@ describe("ConversionQueueService should pass all tests", () => {
 		expect(secondConversionQueueResponse).toMatch(CUuidString)
 		expect(thirdConversionQueueResponse).toMatch(CUuidString)
 	})
-	it("It should return if element is in conversionQueue", () => {
+	it("should return if element is in conversionQueue", () => {
 		/* Arrange */
-		const queueService = new ConversionQueueService()
 		const request: IConversionRequest = generateConversionRequests()[0]
 		const {
 			conversionId
-		} = queueService.addToConversionQueue(request)
-		const conversionQueue = queueService.conversionQueue
-		const convertedQueue = queueService.convertedQueue
+		} = conversionQueueService.addToConversionQueue(request)
+		const conversionQueue = conversionQueueService.conversionQueue
+		const convertedQueue = conversionQueueService.convertedQueue
 		/* Act */
-		const isInConversionQueue = conversionQueue.filter(item => item.conversionId === conversionId).length > 0
-		const isInConvertedQueue = convertedQueue.filter(item => item.conversionId === conversionId).length > 0
+		const isInConversionQueue = conversionQueue.filter(
+			item => item.conversionId === conversionId
+		).length > 0
+		const isInConvertedQueue = convertedQueue.filter(
+			item => item.conversionId === conversionId
+		).length > 0
 		/* Assert */
-		expect(queueService).toBeDefined()
+		expect(conversionQueue).toBeDefined()
 		expect(isInConversionQueue).toBe(true)
 		expect(isInConvertedQueue).toBe(false)
 	})
-	it("It should return if element is in convertedQueue", () => {
+	it("should return if element is in convertedQueue", () => {
 		/* Arrange */
-		const queueService = new ConversionQueueService()
 		const request: IConversionRequest = generateConversionRequests()[0]
 		const {
-			conversionId
-		} = queueService.addToConvertedQueue(request.conversionId, {
-			outputFilename: request.name,
-			path: request.path,
-			resultFile: Buffer.from("someBuffer")
+			conversionId,
+			name,
+			path
+		} = request
+		conversionQueueService.conversionLog.set(conversionId, {
+			failures: 0,
+			status: EConversionStatus.converted
 		})
-		const conversionQueue = queueService.conversionQueue
-		const convertedQueue = queueService.convertedQueue
+		conversionQueueService.addToConvertedQueue(conversionId, {
+			outputFilename: name,
+			path
+		})
+		const conversionQueue = conversionQueueService.conversionQueue
+		const convertedQueue = conversionQueueService.convertedQueue
 		/* Act */
-		const isInConversionQueue = conversionQueue.filter(item => item.conversionId === conversionId).length > 0
-		const isInConvertedQueue = convertedQueue.filter(item => item.conversionId === conversionId).length > 0
+		const isInConversionQueue = conversionQueue.filter(
+			item => item.conversionId === conversionId
+		).length > 0
+		const isInConvertedQueue = convertedQueue.filter(
+			item => item.conversionId === conversionId
+		).length > 0
 		/* Assert */
-		expect(queueService).toBeDefined()
+		expect(conversionQueue).toBeDefined()
 		expect(isInConversionQueue).toBe(false)
 		expect(isInConvertedQueue).toBe(true)
 	})
 	describe("It should return correct IConversionStatusResponses", () => {
+		const buffer = Buffer.from("someBuffer")
 		const CInQueueStatusResponse = {
+			failures: 0,
 			status: "in queue"
 		}
 		const CConvertedStatusResponse = {
+			failures: 0,
 			resultFile: undefined,
 			status: "converted"
 		}
 		const CIsInProgressStatusResponse = {
+			failures: 0,
 			status: "processing"
 		}
-		it("It should throw an error because there is no such conversionId", () => {
+		const getStatus = jest.fn(
+			(conversionId, conversionQueue) => conversionQueue.getStatusById(conversionId)
+		)
+		// eslint-disable-next-line dot-notation
+		conversionQueueService["response"] = jest.fn(
+			(status: EConversionStatus, conversionId: string): IConversionStatus => {
+				const failures = conversionQueueService.getConversionFailureAttempts(conversionId)
+				const baseResp: IConversionInProgress = {
+					conversionId,
+					failures,
+					status
+				}
+				switch (status) {
+					case EConversionStatus.converted: {
+						const convertedFile = conversionQueueService.convertedQueue
+							.filter(item => item.conversionId === conversionId)[0]
+						const response: IConversionFinished = {
+							...baseResp,
+							resultFile: buffer
+						}
+						return response
+					}
+					case EConversionStatus.erroneous: {
+						const newFailureCounter = conversionQueueService
+							.getConversionFailureAttempts(conversionId) + 1
+						return {
+							...baseResp,
+							failures: newFailureCounter
+						}
+					}
+					case EConversionStatus.inQueue: {
+						// Add one to have 1-indexed queue
+						const queuePosition: number = conversionQueueService
+							.getConversionQueuePosition(conversionId)
+						const response: IConversionInQueue = {
+							...baseResp,
+							queuePosition
+						}
+						return response
+					}
+					default:
+						return baseResp
+				}
+			}
+		)
+		it("should throw an error because there is no such conversionId", () => {
 			/* Arrange */
-			const queueService = new ConversionQueueService()
 			const nonAvailableConversionId = uuid()
 			/* Act */
 			const getStatus = (): IConversionStatusResponse => {
-				return queueService.getStatusById(nonAvailableConversionId)
+				return conversionQueueService.getStatusById(nonAvailableConversionId)
 			}
 			/* Assert */
-			expect(getStatus).toThrow("No conversion request found for given conversionId")
+			expect(
+				getStatus
+			).toThrowError(NoSuchConversionIdError)
 		})
-		it("It should return 'in queue' message", () => {
+		it("should return 'in queue' message", () => {
 			/* Arrange */
-			const queueService = new ConversionQueueService()
 			const conversionRequest = generateConversionRequests()[0]
 			const {
 				conversionId
-			} = queueService.addToConversionQueue(conversionRequest)
-			const getStatus = jest.fn(
-				(conversionId, queueService) => queueService.getStatusById(conversionId)
-			)
-			const queuePosition: number = queueService.conversionQueue.findIndex(
+			} = conversionQueueService.addToConversionQueue(conversionRequest)
+			const queuePosition: number = conversionQueueService.conversionQueue.findIndex(
 				item => item.conversionId === conversionId
 			) + 1
 			/* Act */
-			getStatus(conversionId, queueService)
+			getStatus(conversionId, conversionQueueService)
 			/* Assert */
 			expect(getStatus).toReturnWith({
 				...CInQueueStatusResponse,
@@ -151,76 +224,78 @@ describe("ConversionQueueService should pass all tests", () => {
 				queuePosition
 			})
 		})
-		it("It should return with 'processing' response", () => {
+		it("should return with 'processing' response", () => {
 			/* Arrange */
-			const queueService = new ConversionQueueService()
 			const conversionRequest = generateConversionRequests()[0]
 			const {
 				conversionId
-			} = queueService.addToConversionQueue(conversionRequest)
-			const getStatus = jest.fn(
-				(conversionId, queueService) => queueService.getStatusById(conversionId)
-			)
+			} = conversionQueueService.addToConversionQueue(conversionRequest)
+			// Const getStatus = jest.fn(
+			// 	(conversionId, conversionQueue) => conversionQueue.getStatusById(conversionId)
+			// )
 			/* Act */
-			queueService.currentlyConvertingFile = conversionRequest
-			getStatus(conversionId, queueService)
+			conversionQueueService.currentlyConvertingFile = conversionRequest
+			getStatus(conversionId, conversionQueueService)
 			/* Assert */
 			expect(getStatus).toReturnWith({
 				...CIsInProgressStatusResponse,
 				conversionId
 			})
 		})
-		it("It should return with 'converted' response", () => {
+		it("should return with 'converted' response", () => {
 			/* Arrange */
-			const queueService = new ConversionQueueService()
 			const conversionRequest = generateConversionRequests()[0]
 			const {
 				conversionId,
 				name,
 				path
 			} = conversionRequest
-			const buffer = Buffer.from("someBuffer")
-			queueService.addToConvertedQueue(conversionId, {
-				outputFilename: name,
-				path,
-				resultFile: buffer
+			conversionQueueService.conversionLog.set(conversionId, {
+				failures: 0,
+				status: EConversionStatus.converted
 			})
-			const getStatus = jest.fn(
-				(conversionId, queueService) => queueService.getStatusById(conversionId)
-			)
+			conversionQueueService.addToConvertedQueue(conversionId, {
+				outputFilename: name,
+				path
+			})
+			// Const getStatus = jest.fn(
+			// 	(conversionId, conversionQueue) => conversionQueue.getStatusById(conversionId)
+			// )
 			/* Act */
-			getStatus(conversionId, queueService)
-			expect.assertions(3)
+			getStatus(conversionId, conversionQueueService)
 			expect(getStatus).toReturn()
-			expect(getStatus).toReturnTimes(1)
+			// Expect(getStatus).toReturnTimes(1)
 			expect(getStatus).toReturnWith({
 				conversionId,
+				failures: 0,
 				resultFile: buffer,
 				status: CConvertedStatusResponse.status
 			})
 		})
-		it("It should set 'isConverting' to false, after conversionRequest is added to 'convertedQueue'", () => {
+		it("should set 'isConverting' to false, after conversionRequest is added to 'convertedQueue'", () => {
 			/* Arrange */
 			const buffer = Buffer.from("someBuffer")
-			const queueService = new ConversionQueueService()
 			const conversionRequest = generateConversionRequests()[0]
 			const {
 				conversionId,
 				name,
 				path
 			} = conversionRequest
-			queueService.addToConvertedQueue(conversionId, {
-				outputFilename: conversionRequest.name,
-				path: conversionRequest.path,
-				resultFile: buffer
+			conversionQueueService.conversionLog.set(conversionId, {
+				failures: 0,
+				status: EConversionStatus.converted
 			})
-			const getStatus = jest.fn(
-				(conversionId, queueService) => queueService.getStatusById(conversionId)
-			)
+			conversionQueueService.addToConvertedQueue(conversionId, {
+				outputFilename: name,
+				path
+			})
+			// Const getStatus = jest.fn(
+			// 	(conversionId, conversionQueue) => conversionQueue.getStatusById(conversionId)
+			// )
 			const getIsCurrentlyConvertingInfo = jest.fn(
-				queueService => {
-					const isCurrentlyConverting = queueService.isCurrentlyConverting
-					const currentlyConvertingFile = queueService.currentlyConvertingFile
+				conversionQueue => {
+					const isCurrentlyConverting = conversionQueue.isCurrentlyConverting
+					const currentlyConvertingFile = conversionQueue.currentlyConvertingFile
 					return {
 						currentlyConvertingFile,
 						isCurrentlyConverting
@@ -228,13 +303,14 @@ describe("ConversionQueueService should pass all tests", () => {
 				}
 			)
 			/* Act */
-			getStatus(conversionId, queueService)
+			getStatus(conversionId, conversionQueueService)
 			const {
 				isCurrentlyConverting, currentlyConvertingFile
-			} = getIsCurrentlyConvertingInfo(queueService)
+			} = getIsCurrentlyConvertingInfo(conversionQueueService)
 			/* Assert */
 			expect(getStatus).toReturnWith({
 				conversionId,
+				failures: 0,
 				resultFile: buffer,
 				status: CConvertedStatusResponse.status
 			})
@@ -242,5 +318,42 @@ describe("ConversionQueueService should pass all tests", () => {
 			expect(isCurrentlyConverting).toBe(false)
 			expect(currentlyConvertingFile).toBe(null)
 		})
+	})
+	describe("It should handle the convlog correctly", () => {
+		it("Convlog should initially be empty", () => {
+			const convlogLength = conversionQueueService.conversionLog.size
+			expect(convlogLength).toBe(0)
+		})
+		// eslint-disable-next-line jest/no-focused-tests
+		it(
+			"It should correctly change the status of one random convlog-item",
+			() => {
+				/* Arrange */
+				const initialConvLogLength = conversionQueueService.conversionLog.size
+				const sampleSize = 5
+				const randomSampleIndex = generateRandomNumberInInterval(sampleSize - 1)
+				for (let i = 0; i < sampleSize; i++) {
+					const conversionId = uuid()
+					conversionQueueService.conversionLog.set(conversionId, {
+						failures: 0,
+						status: EConversionStatus.inQueue
+					})
+				}
+				const hydratedConvLogLength = conversionQueueService.conversionLog.size
+				const randomSampleNewStatus = EConversionStatus.processing
+				// eslint-disable-next-line max-len
+				const [...convLogElements] = conversionQueueService.conversionLog.entries()
+				const [id, convObj] = convLogElements[randomSampleIndex]
+				/* Act */
+				conversionQueueService.changeConvLogEntry(
+					id,
+					randomSampleNewStatus
+				)
+				/* Assert */
+				expect(initialConvLogLength).toBe(0)
+				expect(hydratedConvLogLength).toBe(sampleSize)
+				expect(convObj.status).toBe(randomSampleNewStatus)
+			}
+		)
 	})
 })

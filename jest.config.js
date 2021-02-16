@@ -14,11 +14,15 @@ module.exports = {
 		"node"
 	],
 	moduleNameMapper: {
+		"^~/(.*)$": "<rootDir>/src/$1",
 		"^Controller(.*)$": "<rootDir>/src/controller$1",
 		"^Model(.*)$": "<rootDir>/src/model$1",
-		"^Services(.*)$": "<rootDir>/src/services$1",
-		"~/": "<rootDir>/src/"
+		"^Services(.*)$": "<rootDir>/src/services$1"
 	},
+	reporters: [
+		"default",
+		"jest-junit"
+	],
 	testRegex: "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$",
 	testTimeout: 90000,
 	transform: {

@@ -1,59 +1,24 @@
+import { InvalidPathError } from "~/constants"
 import {
-	createReadStream,
 	existsSync,
 	mkdir,
+	readFileSync,
+	readdirSync,
+	rmdirSync,
+	statSync,
 	unlink,
+	unlinkSync,
 	writeFile
 } from "fs"
-export const deleteFile = async (path: string | undefined): Promise<void> => {
-	return await new Promise((resolve, reject) => {
-		if (!path) {
-			reject()
-		}
-		else {
-			unlink(path, err => {
-				reject(err)
-			})
-			resolve()
-		}
-	})
-}
-export const readFileToBuffer = async (path: string): Promise<Buffer> => {
-	const stream = createReadStream(path)
-	const data: Buffer[] = []
-	return await new Promise((resolve, reject) => {
-		stream.on("data", (chunk: string | Buffer) => {
-			if (typeof chunk === "string") {
-				data.push(Buffer.from(chunk))
-			}
-			else {
-				data.push(chunk)
-			}
-		})
-		stream.on("error", (error: Error) => {
-			reject(error)
-		})
-		stream.on("end", () => {
-			resolve(Buffer.concat(data))
-		})
-	})
-}
-export const writeToFile = async (
-	outputPath: string,
-	data: Buffer
-): Promise<string> => {
-	return new Promise((resolve, reject) => {
-		writeFile(outputPath, data, err => {
-			reject(err)
-		})
-		resolve(`Created File in ${outputPath}.`)
-	})
-}
+import { resolvePath } from "../util"
 export const createDirectoryIfNotPresent = async (
 	newDirectory: string
-): Promise<string> => {
+): Promise<void> => {
 	return new Promise((resolve, reject) => {
-		if (!existsSync(newDirectory)) {
+		if (!newDirectory.length) {
+			reject(new InvalidPathError(`Invalid name for directory: ${newDirectory}`))
+		}
+		else if (!existsSync(newDirectory)) {
 			mkdir(
 				newDirectory,
 				{
@@ -61,13 +26,100 @@ export const createDirectoryIfNotPresent = async (
 					recursive: true
 				},
 				err => {
-					reject(err)
+					if (err) {
+						reject(err)
+					}
 				}
 			)
-			resolve("Created")
+			resolve()
 		}
 		else {
 			reject(`Dir '${newDirectory}' already exists.`)
 		}
+	})
+}
+export const deleteFile = async (path?: string): Promise<void> => {
+	return await new Promise((resolve, reject) => {
+		if (!path) {
+			reject(new InvalidPathError("No path was provided"))
+		}
+		else if (!existsSync(path)) {
+			reject(new InvalidPathError(`Given Path does not exist: ${path}`))
+		}
+		else {
+			unlink(path, err => {
+				if (err) {
+					reject(err)
+				}
+			})
+			resolve()
+		}
+	})
+}
+export const deleteFolderRecursive = (path: string): void => {
+	if (isDirectory(path)) {
+		readdirSync(path).forEach((file: string, index: number) => {
+			const currentPath = `${path}/${file}`
+			if (isDirectory(currentPath)) {
+				deleteFolderRecursive(currentPath)
+			}
+			else {
+				unlinkSync(currentPath)
+			}
+		})
+		rmdirSync(path, {
+			// eslint-disable-next-line @typescript-eslint/naming-convention
+			recursive: true
+		})
+	}
+	else {
+		throw new InvalidPathError(`Given Path does not point to a directory: ${path}`)
+	}
+}
+export const isFile = (path: string): boolean => {
+	if (existsSync(path) && statSync(path).isFile()) {
+		return true
+	}
+	return false
+}
+export const isDirectory = (path: string): boolean => {
+	if (existsSync(path) && statSync(path).isDirectory()) {
+		return true
+	}
+	return false
+}
+export const readFromFileSync = (pathParam: string): Buffer => {
+	// Will evaluate to something like unoconv-webservice/<pathParam>
+	const path = resolvePath(pathParam)
+	if (!isFile(path)) {
+		throw new InvalidPathError("No such file")
+	}
+	const file = readFileSync(path, {
+		encoding: "utf8"
+	})
+	return Buffer.from(file)
+}
+export const writeToFile = async (
+	outputPath: string,
+	data: Buffer,
+	isBinaryData: boolean = false
+): Promise<void> => {
+	const path = resolvePath(outputPath)
+	return new Promise((resolve, reject) => {
+		if (isBinaryData) {
+			writeFile(path, data, "binary", err => {
+				if (err) {
+					reject(err)
+				}
+			})
+		}
+		else {
+			writeFile(path, data, err => {
+				if (err) {
+					reject(err)
+				}
+			})
+		}
+		resolve()
 	})
 }

@@ -1,6 +1,6 @@
 export enum EConversionStatus {
 	converted = "converted",
-	erroneus = "erroneus",
+	erroneous = "erroneous",
 	inQueue = "in queue",
 	processing = "processing"
 }

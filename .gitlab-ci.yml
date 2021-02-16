@@ -30,24 +30,34 @@ test_lint:
   script:
     - yarn run lint
 
-#test_unit:
-#  stage: test
-#  script:
-#    - yarn run test
+test_unit:
+  stage: test
+  script:
+    - yarn run test:all:ci
+  coverage: /All files[^|]*\|[^|]*\s+([\d\.]+)/
+  artifacts:
+    when: always
+    expire_in: 30 days
+    untracked: false
+    reports:
+      junit: junit.xml
+  retry:
+    max: 2
+    when: always
 
 build_docker_tagged:
   stage: build
   services:
-      - docker:dind
+    - docker:dind
   image: docker:latest
   before_script:
-      - echo "Build docker image"
+    - echo "Build docker image"
   variables:
-      DOCKER_HOST: tcp://localhost:2375
-      DOCKER_PASSWORD: ${DOCKER_PASSWORD}
-      DOCKER_USER: ${DOCKER_USER}
-      DOCKER_TLS_CERTDIR: ""
-      REGISTRY: ${REGISTRY}
+    DOCKER_HOST: tcp://localhost:2375
+    DOCKER_PASSWORD: ${DOCKER_PASSWORD}
+    DOCKER_USER: ${DOCKER_USER}
+    DOCKER_TLS_CERTDIR: ""
+    REGISTRY: ${REGISTRY}
   script:
     - echo -n "${DOCKER_PASSWORD}" | docker login -u ${DOCKER_USER} --password-stdin ${REGISTRY}
     - docker build --build-arg host=${URL_PRODUCTION} -t ${IMAGE_BASE_NAME}:${VERSION} -f ./Dockerfile .
@@ -75,6 +85,7 @@ deploy:
       unoconv-webservice
       ./helm-chart
       """
+  allow_failure: true
   only:
     - tags
 

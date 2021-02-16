@@ -1,80 +1,165 @@
 /* eslint-disable @typescript-eslint/naming-convention */
+import { InvalidPathError } from "../constants"
 import {
 	createDirectoryIfNotPresent,
-	readFileToBuffer,
+	deleteFile,
+	deleteFolderRecursive,
+	isDirectory,
+	isFile,
+	readFromFileSync,
 	writeToFile
 } from "../service/file-io"
-import {
-	existsSync,
-	rmdirSync
-} from "fs"
+import { existsSync } from "fs"
+import { resolvePath } from "~/service/util"
 describe("It should pass all tests for File-IO", () => {
 	const inDirectory = "./testing/input"
 	const outDirectory = "./testing/out"
+	const testDirectory = "./testing/test"
 	beforeAll(() => {
 		if (existsSync(inDirectory)) {
-			rmdirSync(inDirectory, {
-				recursive: true
-			})
+			try {
+				deleteFolderRecursive(inDirectory)
+			}
+			catch (error) {
+				console.error(error.message)
+			}
 		}
 		if (existsSync(outDirectory)) {
-			rmdirSync(outDirectory, {
-				recursive: true
-			})
+			try {
+				deleteFolderRecursive(outDirectory)
+			}
+			catch (error) {
+				console.error(error.message)
+			}
 		}
 	})
-	it("It should create a new directory named 'input'", async () => {
-		/* Act */
-		const createDir = createDirectoryIfNotPresent(inDirectory)
-		/* Assert */
-		await expect(createDir).resolves.toMatch("Created")
+	describe("It should determine if given input is a file or directory correctly", () => {
+		it("should return 'true' because input is a file", () => {
+			/* Arrange */
+			const pathParam = "./src/app.ts"
+			/* Assert */
+			expect(isFile(pathParam)).toBe(true)
+		})
+		it("should return 'false' because input is not a file", () => {
+			/* Arrange */
+			const pathParam = "./app.ts"
+			/* Assert */
+			expect(isFile(pathParam)).toBe(false)
+		})
+		it("should return 'true' because input is a directory", () => {
+			/* Arrange */
+			const pathParam = "./src"
+			/* Assert */
+			expect(isDirectory(pathParam)).toBe(true)
+		})
+		it("should return 'false' because input is no directory", () => {
+			/* Arrange */
+			const pathParam = "./src/app.ts"
+			/* Assert */
+			expect(isDirectory(pathParam)).toBe(false)
+		})
 	})
-	it("It should create a new directory named 'out'", async () => {
-		/* Act */
-		const createDir = createDirectoryIfNotPresent(outDirectory)
-		/* Assert */
-		await expect(createDir).resolves.toMatch("Created")
+	describe("It should handle directory/file creation correctly", () => {
+		it("should create a new directory named 'input'", async () => {
+			/* Act */
+			const createDir = createDirectoryIfNotPresent(inDirectory)
+			/* Assert */
+			await expect(createDir).resolves.toBe(undefined)
+		})
+		it("should create a new directory named 'out'", async () => {
+			/* Act */
+			const createDir = createDirectoryIfNotPresent(outDirectory)
+			/* Assert */
+			await expect(createDir).resolves.toBe(undefined)
+		})
+		it("should throw an error because directory 'src' already exists", async () => {
+			/* Arrange */
+			const directoryName = "src"
+			/* Act */
+			const createDir = createDirectoryIfNotPresent(directoryName)
+			/* Assert */
+			await expect(createDir).rejects.toMatch(`Dir '${directoryName}' already exists.`)
+		})
+		it("should throw an error because directory param is empty", async () => {
+			/* Arrange */
+			const directoryName = ""
+			/* Act */
+			const createDir = createDirectoryIfNotPresent(directoryName)
+			/* Assert */
+			await expect(createDir).rejects.toThrowError(InvalidPathError)
+			await expect(createDir).rejects.toThrowError("Invalid name for directory: ")
+		})
+		it("should create a new file named 'test.txt'", async () => {
+			/* Arrange */
+			const filepath = "./testing/out/testfile.txt"
+			const data = Buffer.from("Some example text to write to a file")
+			/* Act */
+			const createFile = writeToFile(filepath, data)
+			/* Assert */
+			await expect(createFile).resolves.toBe(undefined)
+		})
 	})
-	it("It should throw an error because directory 'src' already exists", async () => {
-		/* Arrange */
-		const directoryName = "src"
-		/* Act */
-		const createDir = createDirectoryIfNotPresent(directoryName)
-		/* Assert */
-		await expect(createDir).rejects.toMatch(`Dir '${directoryName}' already exists.`)
+	describe("It should handle directory/file deletion correctly", () => {
+		const testDirectoryContent = "./testing/test/nested/folder"
+		const testFilePath = "./testing/testFile.txt"
+		beforeAll(async () => {
+			const fileContent = Buffer.from("This is test dummy content")
+			try {
+				await createDirectoryIfNotPresent(testDirectory)
+				await createDirectoryIfNotPresent(testDirectoryContent)
+				await writeToFile(testFilePath, fileContent)
+			}
+			catch (err) {
+				// eslint-disable-next-line no-console
+				console.log(err.message)
+			}
+		})
+		it("should reject because 'path' is undefined", async () => {
+			/* Arrange */
+			const deletion = deleteFile()
+			/* Assert */
+			await expect(deletion).rejects.toThrowError(InvalidPathError)
+			await expect(deletion).rejects.toThrowError("No path was provided")
+		})
+		it("should reject because 'path' does not exist", async () => {
+			/* Arrange */
+			const nonExistentPath = "./nonexistent/test.txt"
+			const deletion = deleteFile(nonExistentPath)
+			/* Assert */
+			await expect(deletion).rejects.toThrowError()
+		})
+		it("should reject because directory does not exist", () => {
+			/* Arrange */
+			const path = "./nonexistent/directory"
+			/* Assert */
+			expect(() => deleteFolderRecursive(path)).toThrowError(InvalidPathError)
+			expect(
+				() => deleteFolderRecursive(path)
+			).toThrowError(
+				`Given Path does not point to a directory: ${path}`
+			)
+		})
+		it("should delete the directory", () => {
+			/* Arrange */
+			const path = resolvePath(testDirectory)
+			/* Assert */
+			expect(() => deleteFolderRecursive(path)).not.toThrow()
+		})
 	})
-	it("It should create a new file named 'test.txt'", async () => {
-		/* Arrange */
-		const filepath = "./testing/out/testfile.txt"
-		const data = Buffer.from("Some example text to write to a file")
-		/* Act */
-		const createFile = writeToFile(filepath, data)
-		/* Assert */
-		await expect(createFile).resolves.toMatch(`Created File in ${filepath}.`)
-	})
-})
-describe.skip("It should create new Buffers from files", () => {
-	const txtFilePath = "./testing/out/testTxt.txt"
-	const pdfFilePath = "./testing/out/testPdf.pdf"
-	const testFileContent = "This is test content for the files to create"
-	const buffer = Buffer.from(testFileContent)
-	const outDirectory = "./testing/out"
-	beforeAll(async done => {
-		await createDirectoryIfNotPresent(outDirectory)
-		await writeToFile(txtFilePath, buffer)
-		await writeToFile(pdfFilePath, buffer)
-		done()
-	})
-	it("It should read in a .txt file as Buffer", async () => {
-		/* Act */
-		const file = await readFileToBuffer(txtFilePath)
-		/* Assert */
-		expect(file).toMatchObject(buffer)
-	})
-	it("It should read in a .pdf file as Buffer", async () => {
-		/* Act */
-		const file = await readFileToBuffer(pdfFilePath)
-		/* Assert */
-		expect(file).toMatchObject(buffer)
+	describe("It should handle file reading correctly", () => {
+		const readFile = (path: string): Buffer => readFromFileSync(path)
+		it("should return the file as buffer", () => {
+			/* Arrange */
+			const path = "./src/app.ts"
+			/* Assert */
+			expect(() => readFile(path)).not.toThrowError(InvalidPathError)
+		})
+		it("should throw an InvalidPathError, because provided file does not exist", () => {
+			/* Arrange */
+			const path = "source"
+			/* Assert */
+			expect(() => readFile(path)).toThrowError(InvalidPathError)
+			expect(() => readFile(path)).toThrowError("No such file")
+		})
 	})
 })

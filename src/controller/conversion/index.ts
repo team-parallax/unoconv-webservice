@@ -72,6 +72,7 @@ export class ConversionController extends Controller {
 			this.setStatus(EHttpResponseCodes.notFound)
 			return {
 				conversionId: fileId,
+				failures: 0,
 				status: err.message
 			}
 		}
