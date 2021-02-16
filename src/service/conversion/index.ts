@@ -1,6 +1,8 @@
+import { CMaxAllowedConversionFailures } from "~/constants"
 import { ConversionQueueService } from "./conversionQueue"
 import { EConversionStatus } from "./enum"
 import {
+	IConversionInQueue,
 	IConversionProcessingResponse,
 	IConversionQueueStatus,
 	IConversionRequest,
@@ -59,23 +61,36 @@ export class ConversionService {
 				// Delete the input file
 				this.logger.log(`[ConversionQueue] delete input file for ${conversionId}`)
 				await deleteFile(path)
-				this.logger.log(`[ConversionQueue] deleted input file`)
 				this.logger.log(`[ConversionQueue] add ${conversionId} to converted queue`)
-				this.conversionQueueService.addToConvertedQueue(
+				this.queueService.addToConvertedQueue(
 					conversionId,
 					resp
 				)
 				this.logger.log(`[ConversionQueue] added to ${conversionId} to converted-queue`)
-				this.queueService.changeConvLogEntry(conversionId, EConversionStatus.converted)
 			}
 			catch (err) {
 				this.logger.error(`[CRITICAL] An unkown error occured during the conversion of ${path} (${conversionId}). Output from unoconv:`)
-				this.logger.error(err.message)
-				this.queueService.changeConvLogEntry(
-					conversionId,
-					EConversionStatus.erroneus
+				this.logger.error(`${err.name} ${err.message}`)
+				const failures: number = this.queueService.getConversionFailureAttempts(
+					conversionId
 				)
-				await deleteFile(path)
+				const remainingConversionTries = CMaxAllowedConversionFailures - failures
+				if (remainingConversionTries === 0) {
+					this.logger.error("Maximum conversion tries exceeded. Removing item.")
+					await deleteFile(path)
+				}
+				else {
+					this.logger.error(
+						`Conversion process for id: ${conversionId} timed out. Remaining Tries: ${remainingConversionTries}`
+					)
+					this.queueService.changeConvLogEntry(
+						conversionId,
+						EConversionStatus.erroneous,
+						name,
+						path,
+						targetFormat
+					)
+				}
 			}
 			finally {
 				this.isCurrentlyConverting = false
@@ -85,20 +100,19 @@ export class ConversionService {
 		}
 	}
 	public getConversionQueueStatus(): IConversionQueueStatus {
-		const conversions = this.queueService.conversionLog.map(
-			item => {
-				const queuePosition: number = this.queueService.conversionQueue.findIndex(
-					element => element.conversionId === item.conversionId
-				)
-				if (item.status === EConversionStatus.inQueue) {
-					return {
-						...item,
-						queuePosition
-					}
-				}
-				return item
+		const conversions: IConversionInQueue[] = []
+		for (const [key, value] of this.queueService.conversionLog) {
+			const queuePosition: number = this.queueService.conversionQueue.findIndex(
+				element => element.conversionId === key
+			)
+			if (value.status === EConversionStatus.inQueue) {
+				conversions.push({
+					...value,
+					conversionId: key,
+					queuePosition
+				})
 			}
-		)
+		}
 		return {
 			conversions,
 			remainingConversions: this.queueLength
@@ -119,7 +133,6 @@ export class ConversionService {
 		await writeToFile(inPath, file)
 		const request: IConversionRequest = {
 			conversionId,
-			isConverted: false,
 			name: filename,
 			path: inPath,
 			targetFormat

@@ -1,6 +1,7 @@
 import { EConversionStatus } from "./enum"
 export interface IConvertable {
-	conversionId: string
+	conversionId: string,
+	failures: number
 }
 export interface IConversionStatus extends IConvertable {
 	status: EConversionStatus
@@ -82,7 +83,6 @@ export interface IConversionRequestBody {
 }
 export interface IConversionRequest {
 	conversionId: string,
-	isConverted: boolean,
 	name: string,
 	path: string,
 	targetFormat: string
@@ -123,6 +123,5 @@ export interface IConversionStatusResponse {
 export interface IConversionResult {
 	conversionId: string,
 	name: string,
-	path: string,
-	resultFile: Buffer
+	path: string
 }

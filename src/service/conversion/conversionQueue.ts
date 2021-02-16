@@ -12,14 +12,14 @@ import { IConvertedFile } from "../unoconv/interface"
 import { Inject } from "typescript-ioc"
 import { Logger } from "../logger"
 import { NoSuchConversionIdError } from "../../constants"
+import { readFromFileSync } from "../file-io"
 export class ConversionQueueService {
+	private static instance: ConversionQueueService
 	@Inject
 	private readonly logger!: Logger
-	// eslint-disable-next-line @typescript-eslint/member-ordering
-	private static instance: ConversionQueueService
-	private readonly convLog!: IConversionStatus[]
-	private readonly conversion!: IConversionRequest[]
-	private readonly converted!: IConversionResult[]
+	private convLog!: Map<string, Omit<IConversionStatus, "conversionId">>
+	private conversion!: IConversionRequest[]
+	private converted!: IConversionResult[]
 	private currentlyConverting!: IConversionRequest | null
 	private isConverting!: boolean
 	constructor() {
@@ -27,17 +27,20 @@ export class ConversionQueueService {
 			return ConversionQueueService.instance
 		}
 		ConversionQueueService.instance = this
-		this.convLog = []
+		this.convLog = new Map<string, Omit<IConversionStatus, "conversionId">>()
 		this.conversion = []
 		this.converted = []
 		this.currentlyConverting = null
 		this.isConverting = false
 		return this
 	}
-	public addToConversionQueue(requestObject: IConversionRequest): IConversionProcessingResponse {
+	public addToConversionQueue(
+		requestObject: IConversionRequest,
+		failures: number = 0
+	): IConversionProcessingResponse {
 		this.conversion.push(requestObject)
-		this.convLog.push({
-			conversionId: requestObject.conversionId,
+		this.convLog.set(requestObject.conversionId, {
+			failures,
 			status: EConversionStatus.inQueue
 		})
 		return {
@@ -50,53 +53,89 @@ export class ConversionQueueService {
 	): IConversionProcessingResponse {
 		const {
 			outputFilename,
-			path,
-			resultFile
+			path
 		} = conversionResult
 		this.converted.push({
 			conversionId,
 			name: outputFilename,
-			path,
-			resultFile
+			path
 		})
 		this.currentlyConvertingFile = null
+		this.changeConvLogEntry(conversionId, EConversionStatus.converted)
 		return {
 			conversionId
 		}
 	}
-	public changeConvLogEntry(conversionId: string, status: EConversionStatus): void {
-		const element = this.convLog.find(convElement => convElement.conversionId === conversionId)
+	public changeConvLogEntry(
+		conversionId: string,
+		status: EConversionStatus,
+		filename?: string,
+		inputPath?: string,
+		targetFormat?: string
+	): void {
+		const element = this.convLog.get(conversionId)
+		const failureCounter = this.getConversionFailureAttempts(conversionId)
 		if (!element) {
 			throw new NoSuchConversionIdError("No such conversion element")
 		}
-		element.status = status
+		else {
+			switch (status) {
+				case EConversionStatus.erroneous: {
+					this.addToConversionQueue(
+						{
+							conversionId,
+							name: filename ?? conversionId,
+							path: inputPath ?? "",
+							targetFormat: targetFormat ?? "pdf"
+						},
+						failureCounter + 1
+					)
+					break
+				}
+				default:
+					element.status = status
+			}
+		}
+	}
+	public getConversionFailureAttempts(conversionId: string): number {
+		this.logger.log(`Retrieving conversion failure attempts of ${conversionId}`)
+		const failures = this.convLog.get(conversionId)?.failures
+		if (failures === undefined) {
+			throw new NoSuchConversionIdError("No such conversionId")
+		}
+		return failures
+	}
+	public getConversionQueuePosition(conversionId: string): number {
+		return this.conversionQueue.findIndex(
+			item => item.conversionId === conversionId
+		) + 1
 	}
 	public getNextQueueElement(): IConversionRequest | undefined {
 		return this.conversionQueue.shift()
 	}
 	public getStatusById(conversionId: string): IConversionStatus {
-		const erroneusDocument = this.convLog.find(
-			item => item.conversionId === conversionId && item.status === EConversionStatus.erroneus
-		)
-		const isInConversionQueue: boolean = this.conversionQueue.filter(
-			(item: IConversionRequest) => item.conversionId === conversionId
-		).length > 0
-		const isInConvertedQueue: boolean = this.convertedQueue.filter(
-			(item: IConversionResult) => item.conversionId === conversionId
-		).length > 0
-		if (erroneusDocument) {
-			this.logger.log("Got erroneus document, removing")
-			return this.response(EConversionStatus.erroneus, conversionId)
+		const isErroneousDocument = this.convLog.get(
+			conversionId
+		)?.status === EConversionStatus.erroneous
+		const isInConversionQueue: boolean = this.convLog.get(
+			conversionId
+		)?.status === EConversionStatus.inQueue
+		const isInConvertedQueue: boolean = this.convLog.get(
+			conversionId
+		)?.status === EConversionStatus.converted
+		if (isErroneousDocument) {
+			this.logger.log(`Got erroneus document, removing ${conversionId}`)
+			return this.response(EConversionStatus.erroneous, conversionId)
 		}
 		if (this.currentlyConvertingFile?.conversionId === conversionId) {
 			return this.response(EConversionStatus.processing, conversionId)
 		}
 		if (isInConversionQueue) {
-			this.logger.log(`[Conversion Queue] creating in-queue response`)
+			this.logger.log(`[Conversion Queue] creating in-queue response for ${conversionId}`)
 			return this.response(EConversionStatus.inQueue, conversionId)
 		}
 		if (isInConvertedQueue) {
-			this.logger.log(`[Conversion Queue] creating converted response`)
+			this.logger.log(`[Conversion Queue] creating converted response for ${conversionId}`)
 			return this.response(EConversionStatus.converted, conversionId)
 		}
 		else {
@@ -109,51 +148,63 @@ export class ConversionQueueService {
 	private response(
 		status: EConversionStatus,
 		conversionId: string
-	): IConversionInQueue | IConversionInProgress | IConversionFinished {
-		if (status === EConversionStatus.inQueue) {
-			// Add one to have 1-indexed queue
-			const queuePosition: number = this.conversionQueue.findIndex(
-				item => item.conversionId === conversionId
-			) + 1
-			const response: IConversionInQueue = {
-				conversionId,
-				queuePosition,
-				status
-			}
-			return response
-		}
-		else if (status === EConversionStatus.converted) {
-			const convertedFile = this.convertedQueue
-				.filter(item => item.conversionId === conversionId)[0]
-			this.logger.log(convertedFile)
-			const response: IConversionFinished = {
-				conversionId,
-				resultFile: convertedFile.resultFile,
-				status
-			}
-			return response
-		}
-		else if (status === EConversionStatus.erroneus) {
-			this.logger.log("Send ERROR feedback to client")
-			return {
-				conversionId,
-				status
-			}
-		}
-		const response: IConversionInProgress = {
+	): IConversionStatus {
+		const failures = this.getConversionFailureAttempts(conversionId)
+		const baseResp: IConversionInProgress = {
 			conversionId,
+			failures,
 			status
 		}
-		return response
+		switch (status) {
+			case EConversionStatus.converted: {
+				const convertedFile = this.convertedQueue
+					.filter(item => item.conversionId === conversionId)[0]
+				this.logger.log(`Got the converted file for ID: ${convertedFile.conversionId}`)
+				const resultFile = readFromFileSync(convertedFile.path)
+				const response: IConversionFinished = {
+					...baseResp,
+					resultFile
+				}
+				return response
+			}
+			case EConversionStatus.erroneous: {
+				this.logger.log(`Send ERROR feedback for conversion ${conversionId} to client`)
+				const newFailureCounter = this.getConversionFailureAttempts(conversionId) + 1
+				return {
+					...baseResp,
+					failures: newFailureCounter
+				}
+			}
+			case EConversionStatus.inQueue: {
+				// Add one to have 1-indexed queue
+				const queuePosition: number = this.getConversionQueuePosition(conversionId)
+				const response: IConversionInQueue = {
+					...baseResp,
+					queuePosition
+				}
+				return response
+			}
+			default:
+				return baseResp
+		}
 	}
-	get conversionLog(): IConversionStatus[] {
+	get conversionLog(): Map<string, Omit<IConversionStatus, "conversionId">> {
 		return this.convLog
+	}
+	set conversionLog(newConvLog: Map<string, Omit<IConversionStatus, "conversionId">>) {
+		this.convLog = newConvLog
 	}
 	get conversionQueue(): IConversionRequest[] {
 		return this.conversion
 	}
+	set conversionQueue(newConversionQueue: IConversionRequest[]) {
+		this.conversion = newConversionQueue
+	}
 	get convertedQueue(): IConversionResult[] {
 		return this.converted
+	}
+	set convertedQueue(newConvertedQueue: IConversionResult[]) {
+		this.converted = newConvertedQueue
 	}
 	get currentlyConvertingFile(): IConversionRequest | null {
 		return this.currentlyConverting

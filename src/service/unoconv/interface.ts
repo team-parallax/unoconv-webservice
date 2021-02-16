@@ -74,8 +74,7 @@ export interface IFormatList {
 }
 export interface IConvertedFile {
 	outputFilename: string,
-	path: string,
-	resultFile: Buffer
+	path: string
 }
 export interface IConversionParams {
 	conversionId: string,

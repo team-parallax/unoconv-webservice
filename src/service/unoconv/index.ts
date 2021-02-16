@@ -1,5 +1,3 @@
-// eslint-disable-next-line spaced-comment
-/// <reference path="./index.d.ts"/>
 import {
 	ConversionError,
 	NoPathForConversionError,
@@ -11,24 +9,22 @@ import {
 	IFormatList
 } from "./interface"
 import { Logger } from "../logger"
+import { getType } from "mime"
+import { Unoconv as unoconv } from "./unoconv"
 import { writeToFile } from "../file-io"
-import unoconv from "unoconv2"
-type TErrnoException = NodeJS.ErrnoException
 export class UnoconvService {
 	private static readonly logger: Logger = new Logger()
 	public static async convertToTarget(
-		{
+		conversionRequest: IConversionParams
+	): Promise<IConvertedFile> {
+		const {
 			conversionId,
 			filePath,
 			outputFilename,
 			targetFormat
-		}: IConversionParams
-	): Promise<IConvertedFile> {
+		} = conversionRequest
 		let filename: string = `${outputFilename}-converted`
-		// TODO: save file as <conversionId>.<EXT>
 		if (!outputFilename?.length) {
-			// If no output filename is provided the output will be named with after scheme below:
-			// <OLD-NAME>-converted.<EXT>
 			filename = conversionId
 		}
 		if (!filePath?.length) {
@@ -37,54 +33,25 @@ export class UnoconvService {
 		if (!targetFormat?.length) {
 			throw new NoTargetFormatSpecifiedError("No target format specified.")
 		}
-		// Todo: add errors for invalid conversion arguments, such as wrong targetformat etc.
 		try {
-			return new Promise((resolve, reject) => {
-				unoconv.convert(
-					filePath,
-					targetFormat,
-					async (
-						err: TErrnoException,
-						res: Buffer
-					) => {
-						if (err) {
-							this.logger.error(`[CRITICAL] Error during conversion for ${filePath} --> ${targetFormat}`)
-							reject(err)
-						}
-						else {
-							try {
-								const path = `./out/${conversionId}.${targetFormat}`
-								this.logger.log(`Successfully converted file. Saving to disk`)
-								await writeToFile(path, res)
-								const result: IConvertedFile = {
-									outputFilename: `${filename}.${targetFormat}`,
-									path,
-									resultFile: res
-								}
-								resolve(result)
-							}
-							catch (err) {
-								this.logger.error(`[CRITICAL] An unknown error occured:`)
-								this.logger.error(err.message)
-								reject(err)
-							}
-						}
-					}
-				)
-			})
+			const conversion = await unoconv.convert(filePath, targetFormat)
+			const path = `./out/${conversionId}.${targetFormat}`
+			this.logger.log(`Successfully converted file. Saving to disk`)
+			const isBinaryData = getType(filePath)?.includes("image/")
+				?? getType(filePath)?.includes("application/octet-stream")
+				?? false
+			await writeToFile(path, conversion, true)
+			const result: Omit<IConvertedFile, "resultFile"> = {
+				outputFilename: `${filename}.${targetFormat}`,
+				path
+			}
+			return result
 		}
 		catch (err) {
-			throw new ConversionError(err)
+			throw new ConversionError(err.message)
 		}
 	}
 	public static async showAvailableFormats(): Promise<IFormatList> {
-		return new Promise((resolve, reject) => {
-			unoconv.detectSupportedFormats((err: TErrnoException, res: IFormatList) => {
-				if (err) {
-					reject(err)
-				}
-				resolve(res)
-			})
-		})
+		return await unoconv.detectSupportedFormats()
 	}
 }
