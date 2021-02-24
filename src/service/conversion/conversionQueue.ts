@@ -98,11 +98,11 @@ export class ConversionQueueService {
 		}
 	}
 	public getConversionFailureAttempts(conversionId: string): number {
-		this.logger.log(`Retrieving conversion failure attempts of ${conversionId}`)
 		const failures = this.convLog.get(conversionId)?.failures
 		if (failures === undefined) {
 			throw new NoSuchConversionIdError("No such conversionId")
 		}
+		this.logger.log(`Retrieving conversion failure attempts of ${conversionId}: ${failures}`)
 		return failures
 	}
 	public getConversionQueuePosition(conversionId: string): number {
@@ -114,6 +114,9 @@ export class ConversionQueueService {
 		return this.conversionQueue.shift()
 	}
 	public getStatusById(conversionId: string): IConversionStatus {
+		const isFailedConversion = this.convLog.get(
+			conversionId
+		)?.status === EConversionStatus.failed
 		const isErroneousDocument = this.convLog.get(
 			conversionId
 		)?.status === EConversionStatus.erroneous
@@ -124,8 +127,11 @@ export class ConversionQueueService {
 			conversionId
 		)?.status === EConversionStatus.converted
 		if (isErroneousDocument) {
-			this.logger.log(`Got erroneus document, removing ${conversionId}`)
+			this.logger.log(`Got erroneous document, removing ${conversionId}`)
 			return this.response(EConversionStatus.erroneous, conversionId)
+		}
+		if (isFailedConversion) {
+			return this.response(EConversionStatus.failed, conversionId)
 		}
 		if (this.currentlyConvertingFile?.conversionId === conversionId) {
 			return this.response(EConversionStatus.processing, conversionId)
@@ -174,6 +180,11 @@ export class ConversionQueueService {
 					...baseResp,
 					failures: newFailureCounter
 				}
+			}
+			case EConversionStatus.failed: {
+				this.logger.log(`Send FAILURE feedback for conversion ${conversionId} to client`)
+				this.logger.log(baseResp)
+				return baseResp
 			}
 			case EConversionStatus.inQueue: {
 				// Add one to have 1-indexed queue

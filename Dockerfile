@@ -19,4 +19,4 @@ RUN mkdir -p \
 	&& yarn install \
 	&& yarn tsoa:create:docker
 
-CMD ["yarn", "start:dev"]
+CMD ["yarn", "start"]
