@@ -9,7 +9,6 @@ import {
 	IFormatList
 } from "./interface"
 import { Logger } from "../logger"
-import { getType } from "mime"
 import { Unoconv as unoconv } from "./unoconv"
 import { writeToFile } from "../file-io"
 export class UnoconvService {
@@ -37,10 +36,7 @@ export class UnoconvService {
 			const conversion = await unoconv.convert(filePath, targetFormat)
 			const path = `./out/${conversionId}.${targetFormat}`
 			this.logger.log(`Successfully converted file. Saving to disk`)
-			const isBinaryData = getType(filePath)?.includes("image/")
-				?? getType(filePath)?.includes("application/octet-stream")
-				?? false
-			await writeToFile(path, conversion, true)
+			await writeToFile(path, conversion)
 			const result: Omit<IConvertedFile, "resultFile"> = {
 				outputFilename: `${filename}.${targetFormat}`,
 				path

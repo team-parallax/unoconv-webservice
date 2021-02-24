@@ -94,32 +94,20 @@ export const readFromFileSync = (pathParam: string): Buffer => {
 	if (!isFile(path)) {
 		throw new InvalidPathError("No such file")
 	}
-	const file = readFileSync(path, {
-		encoding: "utf8"
-	})
+	const file = readFileSync(path)
 	return Buffer.from(file)
 }
 export const writeToFile = async (
 	outputPath: string,
-	data: Buffer,
-	isBinaryData: boolean = false
+	data: Buffer
 ): Promise<void> => {
 	const path = resolvePath(outputPath)
 	return new Promise((resolve, reject) => {
-		if (isBinaryData) {
-			writeFile(path, data, "binary", err => {
-				if (err) {
-					reject(err)
-				}
-			})
-		}
-		else {
-			writeFile(path, data, err => {
-				if (err) {
-					reject(err)
-				}
-			})
-		}
+		writeFile(path, data, err => {
+			if (err) {
+				reject(err)
+			}
+		})
 		resolve()
 	})
 }

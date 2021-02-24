@@ -77,6 +77,13 @@ export class ConversionService {
 				const remainingConversionTries = CMaxAllowedConversionFailures - failures
 				if (remainingConversionTries === 0) {
 					this.logger.error("Maximum conversion tries exceeded. Removing item.")
+					this.queueService.changeConvLogEntry(
+						conversionId,
+						EConversionStatus.failed,
+						name,
+						path,
+						targetFormat
+					)
 					await deleteFile(path)
 				}
 				else {
@@ -118,7 +125,7 @@ export class ConversionService {
 			remainingConversions: this.queueLength
 		}
 	}
-	public getConvertedFile(fileId: string): IConversionStatus {
+	public getConversionStatus(fileId: string): IConversionStatus {
 		this.logger.log(`Get conversion status of ${fileId}`)
 		return this.queueService.getStatusById(fileId)
 	}
